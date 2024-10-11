@@ -2,14 +2,18 @@
   "compilerOptions": {
     "target": "ES6",
     "module": "commonjs",
+    "lib": ["es2016", "dom"],
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "baseUrl": "./src",
     "typeRoots": [
-      "./node_modules/@types" // Убедитесь, что кастомные типы больше не включены
-    ]
+      "./node_modules/@types"
+    ],
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "types": ["node"]
   },
   "include": ["src/**/*"]
 }
