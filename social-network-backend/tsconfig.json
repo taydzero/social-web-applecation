@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "commonjs",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": "./src",
+    "typeRoots": [
+      "./node_modules/@types" // Убедитесь, что кастомные типы больше не включены
+    ]
+  },
+  "include": ["src/**/*"]
+}
