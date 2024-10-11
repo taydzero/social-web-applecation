@@ -1,4 +1,4 @@
-// backend/src/index.ts
+// src/index.ts
 
 import express from 'express';
 import cors from 'cors';
@@ -16,7 +16,7 @@ import userRoutes from './routes/userRoutes';
 import messageRoutes from './routes/messageRoutes';
 import upload from './middlewares/upload';
 import { authenticateToken } from './middlewares/authMiddleware';
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import User from './models/User';
 
 dotenv.config();
@@ -57,8 +57,7 @@ app.post('/api/users/profile', authenticateToken, upload.single('avatar'), async
             return; // Завершаем выполнение функции
         }
 
-        // Здесь вы можете обновить профиль пользователя в базе данных
-        // Например, если вы используете Mongoose:
+        // Обновление профиля пользователя в базе данных
         const updatedUser = await User.findByIdAndUpdate(
             userId,
             { avatar: req.file?.path }, // Убедитесь, что req.file?.path существует
@@ -149,3 +148,4 @@ io.on('connection', (socket) => {
 server.listen(PORT, () => {
     console.log(`Сервер запущен на порту ${PORT}`);
 });
+

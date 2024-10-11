@@ -1,7 +1,8 @@
-// src/controllers/messageController.ts
+// src/controllers/MessageController.ts
 import { Request, Response } from 'express';
 import Message, { IMessage } from '../models/Message';
 import User from '../models/User';
+import mongoose from 'mongoose';
 
 interface AuthRequest extends Request {
     user?: {
@@ -20,9 +21,9 @@ export const getAllMessages = async (req: AuthRequest, res: Response): Promise<v
         const messages = await Message.find({
             $or: [{ from: req.user.userId }, { to: req.user.userId }],
         })
-        .populate('from', 'name email avatar')
-        .populate('to', 'name email avatar')
-        .sort({ timestamp: -1 });
+            .populate('from', 'name email avatar')
+            .populate('to', 'name email avatar')
+            .sort({ timestamp: -1 });
 
         res.json(messages);
     } catch (error) {
@@ -40,6 +41,12 @@ export const getMessagesWithUser = async (req: AuthRequest, res: Response): Prom
         return;
     }
 
+    // Проверка, является ли id допустимым ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        res.status(400).json({ message: 'Некорректный ID пользователя' });
+        return;
+    }
+
     try {
         const messages = await Message.find({
             $or: [
@@ -47,9 +54,9 @@ export const getMessagesWithUser = async (req: AuthRequest, res: Response): Prom
                 { from: id, to: req.user.userId },
             ],
         })
-        .populate('from', 'name email avatar') // Populate fields here
-        .populate('to', 'name email avatar')   // Populate fields here
-        .sort({ timestamp: 1 });
+            .populate('from', 'name email avatar') // Populate fields here
+            .populate('to', 'name email avatar')   // Populate fields here
+            .sort({ timestamp: 1 });
 
         res.json(messages);
     } catch (error) {
@@ -72,6 +79,12 @@ export const sendMessage = async (req: AuthRequest, res: Response): Promise<void
         return;
     }
 
+    // Проверка, является ли to допустимым ObjectId
+    if (!mongoose.Types.ObjectId.isValid(to)) {
+        res.status(400).json({ message: 'Некорректный ID получателя' });
+        return;
+    }
+
     try {
         // Проверка, существует ли получатель
         const recipient = await User.findById(to);
@@ -83,14 +96,14 @@ export const sendMessage = async (req: AuthRequest, res: Response): Promise<void
         // Создание нового сообщения
         const message = new Message({
             content,
-            from: req.user.userId,
-            to,
+            from: new mongoose.Types.ObjectId(req.user.userId), // Использование new
+            to: new mongoose.Types.ObjectId(to),                 // Использование new
             timestamp: new Date(),
         });
 
         await message.save();
 
-        // Не нужно вызывать populate здесь, так как это не будет работать на сохраненном сообщении
+        // Подгружаем отправителя и получателя
         const populatedMessage = await Message.findById(message._id)
             .populate('from', 'name email avatar')
             .populate('to', 'name email avatar');
@@ -110,18 +123,26 @@ export const getConversations = async (req: AuthRequest, res: Response): Promise
     }
 
     try {
+        const userObjectId = new mongoose.Types.ObjectId(req.user.userId);
+
         const conversations = await Message.aggregate([
             {
                 $match: {
                     $or: [
-                        { from: req.user.userId },
-                        { to: req.user.userId }
+                        { from: userObjectId },
+                        { to: userObjectId }
                     ]
                 }
             },
             {
                 $project: {
-                    user: { $cond: [{ $eq: ['$from', req.user.userId] }, '$to', '$from'] }
+                    user: {
+                        $cond: [
+                            { $eq: ['$from', userObjectId] },
+                            '$to',
+                            '$from'
+                        ]
+                    }
                 }
             },
             {
@@ -132,6 +153,12 @@ export const getConversations = async (req: AuthRequest, res: Response): Promise
         ]);
 
         const userIds = conversations.map(conv => conv._id);
+
+        // Проверка, что userIds не пустой
+        if (userIds.length === 0) {
+            res.json([]);
+            return;
+        }
 
         const users = await User.find({ _id: { $in: userIds } }).select('name _id avatar');
 

@@ -13,6 +13,7 @@ const MessageList: React.FC = () => {
         const fetchConversations = async () => {
             try {
                 const response = await axiosInstance.get('/api/messages/conversations');
+                console.log("Fetched conversations:", response.data); // Добавлено для отладки
                 setConversations(Array.isArray(response.data) ? response.data : []);
             } catch (error) {
                 console.error('Ошибка загрузки разговоров', error);
@@ -48,3 +49,4 @@ const MessageList: React.FC = () => {
 };
 
 export default MessageList;
+

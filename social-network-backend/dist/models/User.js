@@ -23,13 +23,21 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// models/Message.ts
+// models/User.ts
 const mongoose_1 = __importStar(require("mongoose"));
-const messageSchema = new mongoose_1.Schema({
-    content: { type: String, required: true },
-    from: { type: String, required: true },
-    to: { type: String, required: true },
-    timestamp: { type: Date, default: Date.now },
+const userSchema = new mongoose_1.Schema({
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    bio: { type: String },
+    avatar: { type: String },
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now },
 });
-const Message = mongoose_1.default.model('Message', messageSchema);
-exports.default = Message;
+// Применение предохранителя обновления даты
+userSchema.pre('save', function (next) {
+    this.updatedAt = new Date();
+    next();
+});
+const User = mongoose_1.default.model('User', userSchema);
+exports.default = User;

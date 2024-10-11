@@ -13,7 +13,9 @@
     ],
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "types": ["node"]
+    "types": ["node"],
+    "outDir": "./dist",        // Добавлено для вывода файлов в папку dist
+    "rootDir": "./src"          // Указано корневое расположение исходных файлов
   },
   "include": ["src/**/*"]
 }

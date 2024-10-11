@@ -1,5 +1,5 @@
 "use strict";
-// backend/src/index.ts
+// src/index.ts
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -61,8 +61,7 @@ app.post('/api/users/profile', authMiddleware_1.authenticateToken, upload_1.defa
             res.status(400).json({ error: 'Не указан пользователь' });
             return; // Завершаем выполнение функции
         }
-        // Здесь вы можете обновить профиль пользователя в базе данных
-        // Например, если вы используете Mongoose:
+        // Обновление профиля пользователя в базе данных
         const updatedUser = yield User_1.default.findByIdAndUpdate(userId, { avatar: (_b = req.file) === null || _b === void 0 ? void 0 : _b.path }, // Убедитесь, что req.file?.path существует
         { new: true });
         res.status(200).json({ message: 'Аватар обновлен', avatarPath: (_c = req.file) === null || _c === void 0 ? void 0 : _c.path });

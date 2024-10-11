@@ -19,9 +19,11 @@ export interface User {
 }
 
 export interface Message {
-    _id: string; // Changed from number to string (since MongoDB IDs are strings)
-    from: User;  // Change from string to User type
-    to: User;    // Change from string to User type
+    _id: string;
+    from: User;  // Отправитель — объект User
+    to: User;    // Получатель — объект User
     content: string;
-    timestamp: Date; // Keep as Date
+    timestamp: Date; // Время отправки
 }
+
+

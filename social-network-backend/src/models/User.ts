@@ -1,26 +1,32 @@
-// backend/src/models/User.ts
-
-import { Document } from 'mongoose';
+// models/User.ts
+import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IUser extends Document {
     name: string;
     email: string;
     password: string;
-    avatar?: string; // Добавьте поле avatar, оно должно быть необязательным
     bio?: string;
+    avatar?: string;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
-// Схема пользователя
-import mongoose, { Schema } from 'mongoose';
-
-const UserSchema: Schema = new mongoose.Schema({
+const userSchema = new Schema<IUser>({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    avatar: { type: String }, // Добавляем поле avatar в схему
-    bio: { type: String }
+    bio: { type: String },
+    avatar: { type: String },
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now },
 });
 
-const User = mongoose.model<IUser>('User', UserSchema);
+// Применение предохранителя обновления даты
+userSchema.pre<IUser>('save', function(next) {
+    this.updatedAt = new Date();
+    next();
+});
 
+const User = mongoose.model<IUser>('User', userSchema);
 export default User;
+

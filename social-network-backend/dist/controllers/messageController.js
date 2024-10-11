@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getConversations = exports.sendMessage = exports.getMessagesWithUser = exports.getAllMessages = void 0;
 const Message_1 = __importDefault(require("../models/Message"));
 const User_1 = __importDefault(require("../models/User"));
+const mongoose_1 = __importDefault(require("mongoose"));
 // Получение всех сообщений текущего пользователя
 const getAllMessages = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
@@ -43,6 +44,11 @@ const getMessagesWithUser = (req, res) => __awaiter(void 0, void 0, void 0, func
     const { id } = req.params; // ID другого пользователя
     if (!((_a = req.user) === null || _a === void 0 ? void 0 : _a.userId)) {
         res.status(401).json({ message: 'Пользователь не авторизован' });
+        return;
+    }
+    // Проверка, является ли id допустимым ObjectId
+    if (!mongoose_1.default.Types.ObjectId.isValid(id)) {
+        res.status(400).json({ message: 'Некорректный ID пользователя' });
         return;
     }
     try {
@@ -75,6 +81,11 @@ const sendMessage = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         res.status(400).json({ message: 'Нельзя отправить сообщение самому себе' });
         return;
     }
+    // Проверка, является ли to допустимым ObjectId
+    if (!mongoose_1.default.Types.ObjectId.isValid(to)) {
+        res.status(400).json({ message: 'Некорректный ID получателя' });
+        return;
+    }
     try {
         // Проверка, существует ли получатель
         const recipient = yield User_1.default.findById(to);
@@ -85,12 +96,12 @@ const sendMessage = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         // Создание нового сообщения
         const message = new Message_1.default({
             content,
-            from: req.user.userId,
-            to,
+            from: new mongoose_1.default.Types.ObjectId(req.user.userId), // Использование new
+            to: new mongoose_1.default.Types.ObjectId(to), // Использование new
             timestamp: new Date(),
         });
         yield message.save();
-        // Не нужно вызывать populate здесь, так как это не будет работать на сохраненном сообщении
+        // Подгружаем отправителя и получателя
         const populatedMessage = yield Message_1.default.findById(message._id)
             .populate('from', 'name email avatar')
             .populate('to', 'name email avatar');
@@ -110,18 +121,25 @@ const getConversations = (req, res) => __awaiter(void 0, void 0, void 0, functio
         return;
     }
     try {
+        const userObjectId = new mongoose_1.default.Types.ObjectId(req.user.userId);
         const conversations = yield Message_1.default.aggregate([
             {
                 $match: {
                     $or: [
-                        { from: req.user.userId },
-                        { to: req.user.userId }
+                        { from: userObjectId },
+                        { to: userObjectId }
                     ]
                 }
             },
             {
                 $project: {
-                    user: { $cond: [{ $eq: ['$from', req.user.userId] }, '$to', '$from'] }
+                    user: {
+                        $cond: [
+                            { $eq: ['$from', userObjectId] },
+                            '$to',
+                            '$from'
+                        ]
+                    }
                 }
             },
             {
@@ -131,6 +149,11 @@ const getConversations = (req, res) => __awaiter(void 0, void 0, void 0, functio
             }
         ]);
         const userIds = conversations.map(conv => conv._id);
+        // Проверка, что userIds не пустой
+        if (userIds.length === 0) {
+            res.json([]);
+            return;
+        }
         const users = yield User_1.default.find({ _id: { $in: userIds } }).select('name _id avatar');
         res.json(users);
     }

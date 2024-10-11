@@ -1,7 +1,8 @@
+// src/components/pages/message/Message.tsx
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useMessages } from './MessageContext';
-import { Message as MessageType, User } from '../../../types/types';
+import { Message as MessageType } from '../../../types/types';
 import axiosInstance from '../../../axiosConfig';
 import { useAuth } from '../../../contexts/AuthContext';
 
@@ -20,6 +21,7 @@ const Message: React.FC = () => {
             if (id) {
                 try {
                     const response = await axiosInstance.get(`/api/messages/${id}`);
+                    console.log("Fetched messages:", response.data); // Добавлено для отладки
                     setUserMessages(Array.isArray(response.data) ? response.data : []);
                 } catch (error) {
                     console.error('Ошибка при загрузке сообщений с пользователем:', error);
@@ -34,6 +36,7 @@ const Message: React.FC = () => {
             if (id) {
                 try {
                     const response = await axiosInstance.get(`/api/users/${id}`); // Получение информации о пользователе
+                    console.log("Fetched recipient info:", response.data); // Добавлено для отладки
                     setRecipientName(response.data.name); // Предполагаем, что ответ содержит поле name
                 } catch (error) {
                     console.error('Ошибка при загрузке информации о пользователе:', error);
@@ -61,6 +64,7 @@ const Message: React.FC = () => {
             <div className="mb-4">
                 {userMessages.length > 0 ? (
                     userMessages.map((msg: MessageType) => {
+                        console.log('Processing message:', msg); // Добавлено для отладки
                         const isSentByCurrentUser = msg.from._id === user?._id;
                         return (
                             <div 
@@ -68,9 +72,9 @@ const Message: React.FC = () => {
                                 className={`p-2 mb-2 rounded ${isSentByCurrentUser ? 'bg-blue-200 self-end' : 'bg-green-200 self-start'}`}
                                 style={{ display: 'flex', flexDirection: 'column', alignItems: isSentByCurrentUser ? 'flex-end' : 'flex-start' }}
                             >
-                                {!isSentByCurrentUser && (
+                                {!isSentByCurrentUser && msg.from && (
                                     <div className="flex items-center mb-1">
-                                        <span className="font-semibold">{msg.from.name}</span>
+                                        <span className="font-semibold">{msg.from.name || "Имя не указано"}</span>
                                     </div>
                                 )}
                                 <p>{msg.content}</p>
@@ -104,3 +108,5 @@ const Message: React.FC = () => {
 };
 
 export default Message;
+
+
