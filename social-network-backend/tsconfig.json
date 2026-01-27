@@ -1,14 +1,14 @@
 {
   "compilerOptions": {
-    "target": "ES2022",                   // Современный JS для Node 18+
-    "module": "NodeNext",                 // ESM модули для Node
-    "moduleResolution": "NodeNext",       // Важно для module = NodeNext
-    "experimentalDecorators": true,       // Для декораторов TypeORM и других
-    "emitDecoratorMetadata": true,        // Для TypeORM
-    "lib": ["es2022", "dom"],             // Современные возможности JS + браузерные типы
-    "strict": true,                        // Полная строгая проверка
-    "esModuleInterop": true,               // Для совместимости require/import
-    "skipLibCheck": true,                  // Пропуск проверки библиотек
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "lib": ["es2022"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "baseUrl": "./src",
     "typeRoots": ["./node_modules/@types"],

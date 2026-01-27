@@ -29,7 +29,7 @@ const Login: React.FC = () => {
             navigate('/');
         } catch (error: any) {
             console.error('Ошибка логина', error);
-            alert(error.response?.data?.message || 'Не удалось выполнить вход. Попробуйте позже.');
+            // Toast уже показывается в AuthContext, alert не нужен
         }
     };
     

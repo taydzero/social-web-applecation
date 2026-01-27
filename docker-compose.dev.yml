@@ -38,6 +38,7 @@ services:
       - ./social-network-backend/src:/app/src
       - ./social-network-backend/uploads:/app/uploads
       - ./social-network-backend/package.json:/app/package.json
+      - ./social-network-backend/tsconfig.json:/app/tsconfig.json
       - /app/node_modules
     ports:
       - "5000:5000"

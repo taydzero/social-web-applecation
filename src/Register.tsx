@@ -30,11 +30,16 @@ const Register: React.FC = () => {
         try {
             await registerUser(data.name, data.email, data.password);
             navigate('/');
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Ошибка регистрации', error);
-            // Обработка ошибок
-            if (error.errors) {
-                setServerErrors(error.errors.map((err: any) => err.msg));
+            // Обработка ошибок - toast уже показывается в AuthContext
+            if (error instanceof Error) {
+                const authError = error as Error & { errors?: Array<{ msg: string }> };
+                if (authError.errors && Array.isArray(authError.errors)) {
+                    setServerErrors(authError.errors.map((err) => err.msg || String(err)));
+                } else {
+                    setServerErrors([authError.message]);
+                }
             } else {
                 setServerErrors(['Не удалось выполнить регистрацию. Попробуйте позже.']);
             }

@@ -1,8 +1,19 @@
 // src/contexts/authContext
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import axiosInstance from '../axiosConfig';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+
+// Кастомный класс ошибки для аутентификации
+class AuthError extends Error {
+    errors?: Array<{ msg: string }>;
+
+    constructor(message: string, errors?: Array<{ msg: string }>) {
+        super(message);
+        this.name = 'AuthError';
+        this.errors = errors;
+    }
+}
 
 interface AuthContextType {
     user: User | null;
@@ -29,6 +40,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
     const navigate = useNavigate();
 
+    const logout = useCallback(() => {
+        localStorage.removeItem('token');
+        setToken(null);
+        setUser(null);
+        navigate('/login');
+        toast.info('Вы вышли из системы.');
+    }, [navigate]);
+
     useEffect(() => {
         if (token) {
             // Получение профиля пользователя при наличии токена
@@ -41,7 +60,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                     logout();
                 });
         }
-    }, [token]);
+    }, [token, logout]);
 
     const register = async (name: string, email: string, password: string) => {
         try {
@@ -57,13 +76,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             toast.success('Регистрация прошла успешно!');
             navigate('/');
         } catch (error: any) {
-            console.error('Ошибка при регистрации:', error.response?.data);
+            console.error('Ошибка при регистрации:', error.response?.data || error.message);
             if (error.response?.data?.errors) {
                 error.response.data.errors.forEach((err: any) => toast.error(err.msg));
+                throw new AuthError('Ошибка регистрации', error.response.data.errors);
+            } else if (error.response?.data?.message) {
+                toast.error(error.response.data.message);
+                throw new AuthError(error.response.data.message);
             } else {
-                toast.error('Не удалось выполнить регистрацию. Попробуйте позже.');
+                const message = error.message === 'Network Error' 
+                    ? 'Сервер недоступен. Проверьте соединение.' 
+                    : 'Не удалось выполнить регистрацию. Попробуйте позже.';
+                toast.error(message);
+                throw new AuthError(message);
             }
-            throw error.response?.data;
         }
     };
 
@@ -81,22 +107,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             toast.success('Вы успешно вошли в систему!');
             navigate('/');
         } catch (error: any) {
-            console.error('Ошибка при логине:', error.response?.data);
+            console.error('Ошибка при логине:', error.response?.data || error.message);
             if (error.response?.data?.errors) {
                 error.response.data.errors.forEach((err: any) => toast.error(err.msg));
+                throw new AuthError('Ошибка входа', error.response.data.errors);
+            } else if (error.response?.data?.message) {
+                toast.error(error.response.data.message);
+                throw new AuthError(error.response.data.message);
             } else {
-                toast.error('Не удалось выполнить вход. Попробуйте позже.');
+                const message = error.message === 'Network Error' 
+                    ? 'Сервер недоступен. Проверьте соединение.' 
+                    : 'Не удалось выполнить вход. Попробуйте позже.';
+                toast.error(message);
+                throw new AuthError(message);
             }
-            throw error.response?.data;
         }
-    };
-
-    const logout = () => {
-        localStorage.removeItem('token');
-        setToken(null);
-        setUser(null);
-        navigate('/login');
-        toast.info('Вы вышли из системы.');
     };
 
     return (
