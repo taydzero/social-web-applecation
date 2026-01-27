@@ -11,15 +11,18 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     const token = authHeader && authHeader.split(' ')[1];
     if (!token) {
         res.sendStatus(401); // Unauthorized
-        return; // Завершаем выполнение функции
+        return;
     }
 
     jwt.verify(token, JWT_SECRET, (err, decoded) => {
         if (err) {
             res.sendStatus(403); // Forbidden
-            return; // Завершаем выполнение функции
+            return;
         }
-        req.user = { userId: (decoded as any).userId }; // Type assertion
-        next(); // Proceed to the next middleware
+        const userId = typeof (decoded as any).userId === 'number' 
+            ? (decoded as any).userId 
+            : Number((decoded as any).userId);
+        req.user = { userId };
+        next();
     });
 };

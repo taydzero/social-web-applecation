@@ -1,21 +1,21 @@
 {
   "compilerOptions": {
-    "target": "ES6",
-    "module": "commonjs",
-    "lib": ["es2016", "dom"],
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
+    "target": "ES2022",                   // Современный JS для Node 18+
+    "module": "NodeNext",                 // ESM модули для Node
+    "moduleResolution": "NodeNext",       // Важно для module = NodeNext
+    "experimentalDecorators": true,       // Для декораторов TypeORM и других
+    "emitDecoratorMetadata": true,        // Для TypeORM
+    "lib": ["es2022", "dom"],             // Современные возможности JS + браузерные типы
+    "strict": true,                        // Полная строгая проверка
+    "esModuleInterop": true,               // Для совместимости require/import
+    "skipLibCheck": true,                  // Пропуск проверки библиотек
     "forceConsistentCasingInFileNames": true,
     "baseUrl": "./src",
-    "typeRoots": [
-      "./node_modules/@types"
-    ],
-    "moduleResolution": "node",
+    "typeRoots": ["./node_modules/@types"],
     "resolveJsonModule": true,
     "types": ["node"],
-    "outDir": "./dist",        // Добавлено для вывода файлов в папку dist
-    "rootDir": "./src"          // Указано корневое расположение исходных файлов
+    "outDir": "./dist",
+    "rootDir": "./src"
   },
   "include": ["src/**/*"]
 }

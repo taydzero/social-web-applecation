@@ -1,7 +1,7 @@
 // UserContext.tsx
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from './types';
-import axios from 'axios';
+import axiosInstance from '../../../axiosConfig';
 
 interface UserContextType {
     users: User[];
@@ -16,7 +16,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const fetchUsers = async () => {
         try {
-            const response = await axios.get('/api/users');
+            const response = await axiosInstance.get('/api/users');
             setUsers(response.data);
         } catch (error) {
             console.error('Ошибка загрузки пользователей', error);

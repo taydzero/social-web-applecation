@@ -1,8 +1,6 @@
 // Header.tsx
 import React, { FC } from "react";
 import { Link } from "react-router-dom";
-import logo from '../../../assets/logo.svg';
-import ThemeToggle from "./ThemeToggle";
 import Player from "../../pages/Player/Player";
 
 const Header: FC = () => {
@@ -17,7 +15,7 @@ const Header: FC = () => {
 
         <div className="flex items-center gap-4">
           <Player isHeader={true} /> {/* Плеер в шапке */}
-          <ThemeToggle />
+          <Link to="/Login"><span className="pl-2">войти</span></Link>
         </div>
       </div>
     </nav>

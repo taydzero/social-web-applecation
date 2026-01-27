@@ -27,9 +27,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import axiosInstance from './axiosConfig'; // Используем настроенный экземпляр Axios
 import EditProfile from './components/pages/Profile/EditProfile';
 
-// Настройка базового URL для Axios
-axiosInstance.defaults.baseURL = 'http://localhost:5000'; // Замените на ваш бэкенд URL
-
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
@@ -49,7 +46,8 @@ root.render(
                     <Route path="/Message" element={<MessageList />} />
                     <Route path="/message/:id" element={<Message />} />
                     <Route path="/Contacts" element={<Contacts />} />
-                    <Route path="/:id" element={<UserProfile />} />
+                    <Route path="/profile" element={<UserProfile />} />
+                    <Route path="/profile/:id" element={<UserProfile />} />
                     <Route
                         path="/edit-profile"
                         element={
@@ -63,7 +61,6 @@ root.render(
                     <Route path="/Player" element={<Player />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
-                    {/* Пример защищённого маршрута */}
                     <Route
                       path="/protected"
                       element={
@@ -73,7 +70,7 @@ root.render(
                       }
                     />
                   </Routes>
-                  <ToastContainer /> {/* Добавляем ToastContainer здесь */}
+                  <ToastContainer />
                 </Layout>
               </MessageProvider>
             </PlayerProvider>

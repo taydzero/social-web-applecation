@@ -1,8 +1,11 @@
 // src/axiosConfig.ts
 import axios from 'axios';
 
+// Используем переменную окружения или дефолтный URL
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 const axiosInstance = axios.create({
-    baseURL: 'http://localhost:5000', // Замените на ваш бэкенд URL
+    baseURL: API_URL, // URL бэкенд сервера
 });
 
 // Добавление интерсептора для включения токена

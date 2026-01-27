@@ -1,19 +1,59 @@
-// backend/src/controllers/userController.ts
-
+// src/controllers/userController.ts
 import { Request, Response } from 'express';
-import { validationResult } from 'express-validator';
+import { AppDataSource } from '../index';
+import { In } from 'typeorm';
+import { User } from '../entities/User';
 import bcrypt from 'bcrypt';
-import User from '../models/User';
+import { formatUser } from '../utils/responseFormatter';
+
+// Получение списка всех пользователей
+export const getAllUsers = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const currentUserId = Number(req.user?.userId);
+        if (isNaN(currentUserId)) {
+            res.status(400).json({ msg: 'Некорректный идентификатор пользователя' });
+            return;
+        }
+
+        const userRepository = AppDataSource.getRepository(User);
+        const users = await userRepository.find({
+            select: ['id', 'name', 'email', 'bio', 'avatar', 'createdAt', 'updatedAt'],
+            order: { name: 'ASC' }
+        });
+
+        // Исключаем текущего пользователя из списка
+        const filteredUsers = users.filter(user => user.id !== currentUserId);
+        
+        // Форматируем пользователей для фронтенда
+        const formattedUsers = filteredUsers.map(user => formatUser(user));
+        
+        res.json(formattedUsers);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Серверная ошибка');
+    }
+};
 
 // Получение профиля текущего пользователя
 export const getUserProfile = async (req: Request, res: Response): Promise<void> => {
     try {
-        const user = await User.findById(req.user?.userId).select('-password');
+        const userId = Number(req.user?.userId);
+        if (isNaN(userId)) {
+            res.status(400).json({ msg: 'Некорректный идентификатор пользователя' });
+            return;
+        }
+
+        const userRepository = AppDataSource.getRepository(User);
+        const user = await userRepository.findOne({
+            where: { id: userId },
+            select: ['id', 'name', 'email', 'bio', 'avatar', 'createdAt', 'updatedAt']
+        });
+
         if (!user) {
             res.status(404).json({ msg: 'Пользователь не найден' });
             return;
         }
-        res.json(user);
+        res.json(formatUser(user));
     } catch (error) {
         console.error(error);
         res.status(500).send('Серверная ошибка');
@@ -22,15 +62,24 @@ export const getUserProfile = async (req: Request, res: Response): Promise<void>
 
 // Получение профиля пользователя по ID
 export const getUserById = async (req: Request, res: Response): Promise<void> => {
-    const { id } = req.params;
-
     try {
-        const user = await User.findById(id).select('-password');
+        const { id } = req.params;
+        const userId = Number(id);
+        if (isNaN(userId)) {
+            res.status(400).json({ msg: 'Некорректный ID пользователя' });
+            return;
+        }
+
+        const userRepository = AppDataSource.getRepository(User);
+        const user = await userRepository.findOneBy({ id: userId });
+
         if (!user) {
             res.status(404).json({ msg: 'Пользователь не найден' });
             return;
         }
-        res.json(user);
+
+        // Исключаем пароль из ответа и форматируем
+        res.json(formatUser(user));
     } catch (error) {
         console.error(error);
         res.status(500).send('Серверная ошибка');
@@ -39,20 +88,24 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
 
 // Обновление профиля пользователя с загрузкой аватара
 export const updateUserProfile = async (req: Request, res: Response): Promise<void> => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        res.status(400).json({ errors: errors.array() });
-        return;
-    }
-
-    const { name, email, password, bio } = req.body;
-
     try {
-        const user = await User.findById(req.user?.userId);
+        const userId = Number(req.user?.userId);
+        if (isNaN(userId)) {
+            res.status(400).json({ error: 'Некорректный идентификатор пользователя' });
+            return;
+        }
+
+        const userRepository = AppDataSource.getRepository(User);
+        const user = await userRepository.findOne({
+            where: { id: userId }
+        });
+
         if (!user) {
             res.status(404).json({ msg: 'Пользователь не найден' });
             return;
         }
+
+        const { name, email, password, bio } = req.body;
 
         if (name) user.name = name;
         if (email) user.email = email;
@@ -62,11 +115,24 @@ export const updateUserProfile = async (req: Request, res: Response): Promise<vo
             user.password = await bcrypt.hash(password, salt);
         }
         if (req.file) {
+            // Сохраняем путь к аватару относительно корня сервера
             user.avatar = `/uploads/avatars/${req.file.filename}`;
         }
 
-        await user.save();
-        res.status(200).json({ message: 'Профиль обновлен успешно', user });
+        await userRepository.save(user);
+        
+        // Получаем обновленного пользователя с полными данными
+        const updatedUser = await userRepository.findOne({
+            where: { id: userId },
+            select: ['id', 'name', 'email', 'bio', 'avatar', 'createdAt', 'updatedAt']
+        });
+        
+        if (!updatedUser) {
+            res.status(404).json({ error: 'Пользователь не найден после обновления' });
+            return;
+        }
+        
+        res.status(200).json({ message: 'Профиль обновлен успешно', user: formatUser(updatedUser) });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Ошибка обновления профиля' });

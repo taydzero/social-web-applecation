@@ -2,7 +2,7 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { useAuth } from './contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 
@@ -29,14 +29,10 @@ const Login: React.FC = () => {
             navigate('/');
         } catch (error: any) {
             console.error('Ошибка логина', error);
-            // Обработка ошибок, например, отображение сообщения пользователю
-            if (error.errors) {
-                alert(error.errors.map((err: any) => err.msg).join('\n'));
-            } else {
-                alert('Не удалось выполнить вход. Попробуйте позже.');
-            }
+            alert(error.response?.data?.message || 'Не удалось выполнить вход. Попробуйте позже.');
         }
     };
+    
 
     return (
         <div className="max-w-md mx-auto p-4">
@@ -56,6 +52,7 @@ const Login: React.FC = () => {
                     Войти
                 </button>
             </form>
+            <Link to="/Register"><span className="pl-2">Зарегистрироваться</span></Link>
         </div>
     );
 };

@@ -18,6 +18,8 @@ const Settings = () => {
   const handleBackgroundChange = (themeType: 'light' | 'dark' | 'neutral', bg: string) => {
     setBackground(themeType, bg);
   };
+  
+  
 
   return (
     <div className="p-4">

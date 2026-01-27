@@ -1,3 +1,4 @@
+// src/contexts/authContext
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import axiosInstance from '../axiosConfig';
 import { useNavigate } from 'react-router-dom';

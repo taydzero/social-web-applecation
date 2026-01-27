@@ -1,31 +1,29 @@
-// src/controllers/MessageController.ts
 import { Request, Response } from 'express';
-import Message, { IMessage } from '../models/Message';
-import User from '../models/User';
-import mongoose from 'mongoose';
-
-interface AuthRequest extends Request {
-    user?: {
-        userId: string;
-    };
-}
+import { AppDataSource } from '../index';
+import { Message } from '../entities/Message';
+import { User } from '../entities/User';
+import { In } from 'typeorm';
+import { formatMessages, formatMessage } from '../utils/responseFormatter';
 
 // Получение всех сообщений текущего пользователя
-export const getAllMessages = async (req: AuthRequest, res: Response): Promise<void> => {
-    if (!req.user?.userId) {
-        res.status(401).json({ message: 'Пользователь не авторизован' });
-        return;
-    }
-
+export const getAllMessages = async (req: Request, res: Response): Promise<void> => {
+    const messageRepository = AppDataSource.getRepository(Message);
     try {
-        const messages = await Message.find({
-            $or: [{ from: req.user.userId }, { to: req.user.userId }],
-        })
-            .populate('from', 'name email avatar')
-            .populate('to', 'name email avatar')
-            .sort({ timestamp: -1 });
+        const userId = Number(req.user?.userId); // Преобразуем в число
+        if (isNaN(userId)) {
+            res.status(400).json({ message: 'Некорректный идентификатор пользователя' });
+            return;
+        }
 
-        res.json(messages);
+        const messages = await messageRepository.find({
+            where: [
+                { fromUser: { id: userId } },
+                { toUser: { id: userId } }
+            ],
+            relations: ['fromUser', 'toUser'],
+            order: { timestamp: 'DESC' }
+        });
+        res.json(formatMessages(messages));
     } catch (error) {
         console.error(error);
         res.status(500).send('Серверная ошибка');
@@ -33,32 +31,40 @@ export const getAllMessages = async (req: AuthRequest, res: Response): Promise<v
 };
 
 // Получение сообщений с конкретным пользователем
-export const getMessagesWithUser = async (req: AuthRequest, res: Response): Promise<void> => {
-    const { id } = req.params; // ID другого пользователя
+export const getMessagesWithUser = async (req: Request, res: Response): Promise<void> => {
+    const messageRepository = AppDataSource.getRepository(Message);
+    const userRepository = AppDataSource.getRepository(User);
+    const { id } = req.params;
 
-    if (!req.user?.userId) {
-        res.status(401).json({ message: 'Пользователь не авторизован' });
-        return;
-    }
-
-    // Проверка, является ли id допустимым ObjectId
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    const targetUserId = Number(id);
+    if (isNaN(targetUserId)) {
         res.status(400).json({ message: 'Некорректный ID пользователя' });
         return;
     }
 
     try {
-        const messages = await Message.find({
-            $or: [
-                { from: req.user.userId, to: id },
-                { from: id, to: req.user.userId },
-            ],
-        })
-            .populate('from', 'name email avatar') // Populate fields here
-            .populate('to', 'name email avatar')   // Populate fields here
-            .sort({ timestamp: 1 });
+        const otherUser = await userRepository.findOneBy({id: targetUserId});
+        if (!otherUser) {
+            res.status(404).json({ message: 'Пользователь не найден' });
+            return;
+        }
 
-        res.json(messages);
+        const currentUserId = Number(req.user?.userId);
+        if (isNaN(currentUserId)) {
+            res.status(400).json({ message: 'Некорректный идентификатор пользователя' });
+            return;
+        }
+
+        const messages = await messageRepository.find({
+            where: [
+                { fromUser: { id: currentUserId }, toUser: { id: targetUserId } },
+                { fromUser: { id: targetUserId }, toUser: { id: currentUserId } }
+            ],
+            relations: ['fromUser', 'toUser'],
+            order: { timestamp: 'ASC' }
+        });
+
+        res.json(formatMessages(messages));
     } catch (error) {
         console.error(error);
         res.status(500).send('Серверная ошибка');
@@ -66,49 +72,60 @@ export const getMessagesWithUser = async (req: AuthRequest, res: Response): Prom
 };
 
 // Отправка нового сообщения
-export const sendMessage = async (req: AuthRequest, res: Response): Promise<void> => {
+export const sendMessage = async (req: Request, res: Response): Promise<void> => {
+    const messageRepository = AppDataSource.getRepository(Message);
+    const userRepository = AppDataSource.getRepository(User);
     const { to, content } = req.body;
 
-    if (!req.user?.userId) {
-        res.status(401).json({ message: 'Пользователь не авторизован' });
+    if (!to || !content) {
+        res.status(400).json({ message: 'Необходимы поля "to" и "content"' });
         return;
     }
 
-    if (req.user.userId === to) {
-        res.status(400).json({ message: 'Нельзя отправить сообщение самому себе' });
-        return;
-    }
+    const recipientId = Number(to);
+    const senderId = Number(req.user?.userId);
 
-    // Проверка, является ли to допустимым ObjectId
-    if (!mongoose.Types.ObjectId.isValid(to)) {
-        res.status(400).json({ message: 'Некорректный ID получателя' });
+    if (isNaN(recipientId) || isNaN(senderId)) {
+        res.status(400).json({ message: 'Некорректные идентификаторы пользователя' });
         return;
     }
 
     try {
-        // Проверка, существует ли получатель
-        const recipient = await User.findById(to);
+        if (senderId === recipientId) {
+            res.status(400).json({ message: 'Нельзя отправить сообщение самому себе' });
+            return;
+        }
+
+        const recipient = await userRepository.findOne({
+            where: { id: recipientId },
+        });
         if (!recipient) {
             res.status(404).json({ message: 'Получатель не найден' });
             return;
         }
+        
+        const sender = await userRepository.findOne({
+            where: { id: senderId },
+        });
+        if (!sender) {
+            res.status(404).json({ message: 'Отправитель не найден' });
+            return;
+        }
 
-        // Создание нового сообщения
-        const message = new Message({
+        const message = messageRepository.create({
             content,
-            from: new mongoose.Types.ObjectId(req.user.userId), // Использование new
-            to: new mongoose.Types.ObjectId(to),                 // Использование new
-            timestamp: new Date(),
+            fromUser: sender,
+            toUser: recipient
         });
 
-        await message.save();
+        await messageRepository.save(message);
 
-        // Подгружаем отправителя и получателя
-        const populatedMessage = await Message.findById(message._id)
-            .populate('from', 'name email avatar')
-            .populate('to', 'name email avatar');
-
-        res.status(201).json(populatedMessage);
+        const populatedMessage = await messageRepository.findOne({
+            where: { id: message.id },
+            relations: ['fromUser', 'toUser'],
+        });
+        res.status(201).json(formatMessage(populatedMessage!));
+        
     } catch (error) {
         console.error('Ошибка при отправке сообщения', error);
         res.status(500).json({ message: 'Серверная ошибка' });
@@ -116,53 +133,68 @@ export const sendMessage = async (req: AuthRequest, res: Response): Promise<void
 };
 
 // Получение списка всех пользователей, с которыми была переписка
-export const getConversations = async (req: AuthRequest, res: Response): Promise<void> => {
-    if (!req.user?.userId) {
-        res.status(401).json({ message: 'Пользователь не авторизован' });
+export const getConversations = async (req: Request, res: Response): Promise<void> => {
+    const messageRepository = AppDataSource.getRepository(Message);
+    const userRepository = AppDataSource.getRepository(User);
+    const currentUserId = Number(req.user?.userId);
+
+    if (isNaN(currentUserId)) {
+        res.status(400).json({ message: 'Некорректный идентификатор пользователя' });
         return;
     }
 
     try {
-        const userObjectId = new mongoose.Types.ObjectId(req.user.userId);
+        const messages = await messageRepository.find({
+            where: [
+                { fromUser: { id: currentUserId } },
+                { toUser: { id: currentUserId } }
+            ],
+            relations: ['fromUser', 'toUser'],
+        });
 
-        const conversations = await Message.aggregate([
-            {
-                $match: {
-                    $or: [
-                        { from: userObjectId },
-                        { to: userObjectId }
-                    ]
-                }
-            },
-            {
-                $project: {
-                    user: {
-                        $cond: [
-                            { $eq: ['$from', userObjectId] },
-                            '$to',
-                            '$from'
-                        ]
-                    }
-                }
-            },
-            {
-                $group: {
-                    _id: '$user'
-                }
+        const userIds = new Set<number>();
+        messages.forEach(message => {
+            if (message.fromUser.id !== currentUserId) {
+                userIds.add(message.fromUser.id);
             }
-        ]);
+            if (message.toUser.id !== currentUserId) {
+                userIds.add(message.toUser.id);
+            }
+        });
 
-        const userIds = conversations.map(conv => conv._id);
+        const users = await userRepository.find({
+            where: { id: In(Array.from(userIds)) },
+            select: ['id', 'name', 'avatar', 'email', 'bio', 'createdAt', 'updatedAt'],
+        });
+        
+        // Получаем последнее сообщение для каждого пользователя
+        const formattedUsers = await Promise.all(users.map(async (user) => {
+            const lastMessage = await messageRepository.findOne({
+                where: [
+                    { fromUser: { id: currentUserId }, toUser: { id: user.id } },
+                    { fromUser: { id: user.id }, toUser: { id: currentUserId } }
+                ],
+                relations: ['fromUser', 'toUser'],
+                order: { timestamp: 'DESC' },
+            });
 
-        // Проверка, что userIds не пустой
-        if (userIds.length === 0) {
-            res.json([]);
-            return;
-        }
+            return {
+                _id: user.id.toString(),
+                name: user.name,
+                email: user.email,
+                bio: user.bio,
+                avatar: user.avatar,
+                createdAt: user.createdAt?.toISOString() || new Date().toISOString(),
+                updatedAt: user.updatedAt?.toISOString() || new Date().toISOString(),
+                lastMessage: lastMessage ? {
+                    content: lastMessage.content,
+                    timestamp: lastMessage.timestamp,
+                    fromUserId: lastMessage.fromUser.id.toString(),
+                } : null,
+            };
+        }));
 
-        const users = await User.find({ _id: { $in: userIds } }).select('name _id avatar');
-
-        res.json(users);
+        res.json(formattedUsers);
     } catch (error) {
         console.error('Ошибка при получении разговоров', error);
         res.status(500).json({ message: 'Серверная ошибка' });

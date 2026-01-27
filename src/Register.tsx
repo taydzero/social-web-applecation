@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useAuth } from './contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 
@@ -71,6 +71,7 @@ const Register: React.FC = () => {
                     Зарегистрироваться
                 </button>
             </form>
+            <Link to="/Login"><span className="pl-2">Войти</span></Link>
         </div>
     );
 };

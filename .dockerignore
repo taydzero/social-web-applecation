@@ -1,0 +1,14 @@
+node_modules
+build
+.git
+.gitignore
+*.md
+.vscode
+.idea
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+social-network-backend
+
