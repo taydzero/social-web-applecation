@@ -1,7 +1,6 @@
-// src/components/pages/message/MessageList.tsx
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import axiosInstance from '../../../axiosConfig'; // Используйте axiosInstance для авторизованных запросов
+import axiosInstance from '../../../axiosConfig';
 import { User } from '../../../types/types';
 import { useAuth } from '../../../contexts/AuthContext';
 
@@ -23,7 +22,7 @@ const MessageList: React.FC = () => {
         const fetchConversations = async () => {
             try {
                 const response = await axiosInstance.get('/api/messages/conversations');
-                console.log("Fetched conversations:", response.data); // Добавлено для отладки
+                console.log("Fetched conversations:", response.data); // add to debug
                 setConversations(Array.isArray(response.data) ? response.data : []);
             } catch (error) {
                 console.error('Ошибка загрузки разговоров', error);
@@ -40,7 +39,7 @@ const MessageList: React.FC = () => {
 
     return (
         <div className="p-4 max-w-2xl mx-auto">
-            <h2 className="text-2xl font-bold mb-6">Ваши сообщения</h2>
+            <h2 className="text-2xl font-bold mb-4">Ваши сообщения</h2>
             {conversations.length > 0 ? (
                 <div className="space-y-2">
                     {conversations.map((user) => (
@@ -52,8 +51,7 @@ const MessageList: React.FC = () => {
                             ease-in-out transform hover:scale-[1.02]"
                         >
                             <div className="flex items-center gap-4">
-                                {/* Аватар */}
-                                <div className="flex-shrink-0">
+                                {/* <div className="flex-shrink-0">
                                     {user.avatar ? (
                                         <img 
                                             src={user.avatar.startsWith('http') ? user.avatar : `http://localhost:5000${user.avatar}`} 
@@ -73,11 +71,11 @@ const MessageList: React.FC = () => {
                                             </span>
                                         </div>
                                     )}
-                                </div>
+                                </div> */}
                                 
                                 {/* Информация о пользователе и последнее сообщение */}
                                 <div className="flex-1 min-w-0">
-                                    <div className="flex items-center justify-between mb-1">
+                                    <div className="flex items-center justify-between">
                                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
                                             {user.name}
                                         </h3>

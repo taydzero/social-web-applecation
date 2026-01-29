@@ -106,7 +106,7 @@ const UserProfile: React.FC = () => {
                 {/* Кнопка редактирования профиля */}
                 <button
                     onClick={handleEditProfile} // Обработчик для перехода к редактированию профиля
-                    className="px-4 py-2 bg-rose-500 text-white rounded transition">
+                    className="px-4 py-2 bg-rose-500 dark:bg-slate-950 dark:border-rose-500 text-white rounded transition">
                     Редактировать профиль
                 </button>
                 {/* Измените кнопку для отправки сообщения */}
