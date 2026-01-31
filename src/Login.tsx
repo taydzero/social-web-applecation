@@ -1,4 +1,3 @@
-// src/components/Login.tsx
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { useAuth } from './contexts/AuthContext';
@@ -29,7 +28,6 @@ const Login: React.FC = () => {
             navigate('/');
         } catch (error: any) {
             console.error('Ошибка логина', error);
-            // Toast уже показывается в AuthContext, alert не нужен
         }
     };
     

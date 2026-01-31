@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { AppDataSource } from '../index'; // Импортируйте ваш DataSource из index.ts
+import { AppDataSource } from '../index';
 import { User } from '../entities/User';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -46,7 +46,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 // Логин пользователя
 export const login = async (req: Request, res: Response): Promise<void> => {
     const userRepository = AppDataSource.getRepository(User);
-    console.log('Полученные данные:', req.body); // Логирование данных запроса
+    console.log('Полученные данные:', req.body);
     const { email, password } = req.body;
 
     try {
@@ -68,7 +68,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
         res.json({ token });
     } catch (error) {
-        console.error('Ошибка на сервере при попытке логина:', error); // Логирование ошибки
+        console.error('Ошибка на сервере при попытке логина:', error);
         res.status(500).send('Серверная ошибка');
     }
 };

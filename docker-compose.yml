@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # PostgreSQL база данных
+  #PostgreSQL
   postgres:
     image: postgres:15-alpine
     container_name: social-network-db
@@ -21,7 +21,7 @@ services:
     networks:
       - social-network-network
 
-  # Бэкенд сервер
+  #backend
   backend:
     build:
       context: ./social-network-backend
@@ -47,7 +47,7 @@ services:
       - social-network-network
     restart: unless-stopped
 
-  # Фронтенд сервер
+  #Frontend
   frontend:
     build:
       context: .

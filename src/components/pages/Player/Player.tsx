@@ -1,4 +1,3 @@
-// Player.tsx
 import React from "react";
 import { usePlayer } from "./PlayerContext";
 import PauseOutlined from '@ant-design/icons/PauseOutlined';

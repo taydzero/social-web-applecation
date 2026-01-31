@@ -58,7 +58,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({
     { volume }
   );
 
-// hook load progbar
 useEffect(() => {
   if (!sound || !sound.duration()) return;
 

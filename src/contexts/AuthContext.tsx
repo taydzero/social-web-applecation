@@ -1,10 +1,8 @@
-// src/contexts/authContext
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import axiosInstance from '../axiosConfig';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
-// Кастомный класс ошибки для аутентификации
 class AuthError extends Error {
     errors?: Array<{ msg: string }>;
 

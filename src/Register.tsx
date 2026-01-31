@@ -1,4 +1,3 @@
-// src/components/Register.tsx
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useAuth } from './contexts/AuthContext';
@@ -32,7 +31,6 @@ const Register: React.FC = () => {
             navigate('/');
         } catch (error: unknown) {
             console.error('Ошибка регистрации', error);
-            // Обработка ошибок - toast уже показывается в AuthContext
             if (error instanceof Error) {
                 const authError = error as Error & { errors?: Array<{ msg: string }> };
                 if (authError.errors && Array.isArray(authError.errors)) {

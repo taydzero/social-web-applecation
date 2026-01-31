@@ -1,4 +1,3 @@
-// src/controllers/userController.ts
 import { Request, Response } from 'express';
 import { AppDataSource } from '../index';
 import { In } from 'typeorm';
@@ -21,10 +20,8 @@ export const getAllUsers = async (req: Request, res: Response): Promise<void> =>
             order: { name: 'ASC' }
         });
 
-        // Исключаем текущего пользователя из списка
         const filteredUsers = users.filter(user => user.id !== currentUserId);
         
-        // Форматируем пользователей для фронтенда
         const formattedUsers = filteredUsers.map(user => formatUser(user));
         
         res.json(formattedUsers);
@@ -78,7 +75,6 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
             return;
         }
 
-        // Исключаем пароль из ответа и форматируем
         res.json(formatUser(user));
     } catch (error) {
         console.error(error);
@@ -115,7 +111,6 @@ export const updateUserProfile = async (req: Request, res: Response): Promise<vo
             user.password = await bcrypt.hash(password, salt);
         }
         if (req.file) {
-            // Сохраняем путь к аватару относительно корня сервера
             user.avatar = `/uploads/avatars/${req.file.filename}`;
         }
 

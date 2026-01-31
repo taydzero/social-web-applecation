@@ -1,17 +1,13 @@
-# Dockerfile для фронтенда (режим разработки)
+# Dockerfile (dev mode)
 FROM node:18-alpine
 
 WORKDIR /app
 
-# Копируем package.json и package-lock.json
 COPY package*.json ./
 
-# Устанавливаем зависимости
 RUN npm ci
 
-# Открываем порт
 EXPOSE 3000
 
-# Запускаем в режиме разработки
 CMD ["npm", "start"]
 

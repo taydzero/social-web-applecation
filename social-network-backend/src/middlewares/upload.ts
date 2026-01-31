@@ -1,4 +1,3 @@
-// backend/src/middlewares/upload.ts
 import multer from 'multer';
 import path from 'path';
 import { Request } from 'express';
@@ -24,7 +23,7 @@ const fileFilter = (req: Request, file: any, cb: any) => {
 const upload = multer({
     storage,
     fileFilter,
-    limits: { fileSize: 2000000 }, // 2MB
+    limits: { fileSize: 2000000 },
 });
 
 export default upload;

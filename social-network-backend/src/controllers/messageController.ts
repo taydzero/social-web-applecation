@@ -9,7 +9,7 @@ import { formatMessages, formatMessage } from '../utils/responseFormatter';
 export const getAllMessages = async (req: Request, res: Response): Promise<void> => {
     const messageRepository = AppDataSource.getRepository(Message);
     try {
-        const userId = Number(req.user?.userId); // Преобразуем в число
+        const userId = Number(req.user?.userId);
         if (isNaN(userId)) {
             res.status(400).json({ message: 'Некорректный идентификатор пользователя' });
             return;

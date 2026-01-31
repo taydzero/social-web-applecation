@@ -1,5 +1,3 @@
-// src/types/types.ts
-
 export interface EditProfileFormInputs {
     name?: string;
     email?: string;
@@ -20,10 +18,10 @@ export interface User {
 
 export interface Message {
     _id: string;
-    from: User;  // Отправитель — объект User
-    to: User;    // Получатель — объект User
+    from: User;
+    to: User;
     content: string;
-    timestamp: Date; // Время отправки
+    timestamp: Date;
 }
 
 

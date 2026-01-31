@@ -1,4 +1,3 @@
-// src/components/ProtectedComponent.tsx
 import React from 'react';
 
 const ProtectedComponent: React.FC = () => {

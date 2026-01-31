@@ -1,13 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-
-// Импортируем фоны
 import lightBg1 from './assets/lightBg1.gif';
 import lightBg2 from './assets/lightBg2.gif';
 import lightBg3 from './assets/lightBg3.gif';
 import darkBg1 from './assets/darkBg1.gif';
 import darkBg2 from './assets/darkBg2.gif';
 import darkBg3 from './assets/darkBg3.gif';
-import neutralBg1 from './assets/neutralBg1.gif';  // Добавляем нейтральные фоны
+import neutralBg1 from './assets/neutralBg1.gif';
 import neutralBg2 from './assets/neutralBg2.gif';
 import neutralBg3 from './assets/neutralBg3.gif';
 
@@ -17,7 +15,7 @@ type ThemeContextType = {
   backgrounds: {
     light: string;
     dark: string;
-    neutral: string; // Добавляем нейтральный фон
+    neutral: string;
   };
   setBackground: (theme: 'light' | 'dark' | 'neutral', bg: string) => void;
 };
@@ -29,7 +27,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [backgrounds, setBackgrounds] = useState<{ light: string; dark: string; neutral: string }>({
     light: lightBg1,
     dark: darkBg1,
-    neutral: neutralBg1, // начальный нейтральный фон
+    neutral: neutralBg1,
   });
 
   useEffect(() => {
@@ -46,11 +44,11 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   useEffect(() => {
     if (backgrounds.neutral) {
-      document.body.style.backgroundImage = `url(${backgrounds.neutral})`; // Если выбран нейтральный фон
+      document.body.style.backgroundImage = `url(${backgrounds.neutral})`;
     } else {
-      document.body.style.backgroundImage = `url(${backgrounds[theme]})`; // В противном случае выбираем фон в зависимости от темы
+      document.body.style.backgroundImage = `url(${backgrounds[theme]})`;
     }
-    document.body.className = ''; // Удаляем предыдущие классы
+    document.body.className = '';
     document.body.classList.add(theme);
 }, [theme, backgrounds]);
 

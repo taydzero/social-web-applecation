@@ -1,5 +1,3 @@
-// src/components/pages/Profile/EditProfile.tsx
-
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import axiosInstance from '../../../axiosConfig';
@@ -17,11 +15,11 @@ const schema = yup.object({
     avatar: yup
         .mixed<FileList>()
         .test('fileSize', 'Размер файла слишком большой', (value) => {
-            if (!value || value.length === 0) return true; // Файл не выбран
-            return value[0].size <= 2000000; // 2MB
+            if (!value || value.length === 0) return true;
+            return value[0].size <= 2000000;
         })
         .test('fileType', 'Неверный тип файла', (value) => {
-            if (!value || value.length === 0) return true; // Файл не выбран
+            if (!value || value.length === 0) return true;
             return ['image/jpeg', 'image/png', 'image/gif'].includes(value[0].type);
         }),
 }).required();

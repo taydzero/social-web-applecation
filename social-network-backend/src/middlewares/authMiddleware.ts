@@ -10,13 +10,13 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
     if (!token) {
-        res.sendStatus(401); // Unauthorized
+        res.sendStatus(401);
         return;
     }
 
     jwt.verify(token, JWT_SECRET, (err, decoded) => {
         if (err) {
-            res.sendStatus(403); // Forbidden
+            res.sendStatus(403);
             return;
         }
         const userId = typeof (decoded as any).userId === 'number' 

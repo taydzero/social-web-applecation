@@ -1,5 +1,4 @@
 services:
-  # PostgreSQL база данных
   postgres:
     image: postgres:15-alpine
     container_name: social-network-db-dev
@@ -19,7 +18,6 @@ services:
     networks:
       - social-network-network
 
-  # Бэкенд сервер (режим разработки)
   backend:
     build:
       context: ./social-network-backend
@@ -50,7 +48,6 @@ services:
     command: npm run dev
     restart: unless-stopped
 
-  # Фронтенд сервер (режим разработки)
   frontend:
     build:
       context: .

@@ -1,9 +1,7 @@
-// src/components/pages/Profile/UserList.tsx
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useUserContext } from './UserContext';
-import { User } from '../../../types/types'; // Проверьте путь
+import { User } from '../../../types/types';
 
 interface UserListProps {
     users: User[];

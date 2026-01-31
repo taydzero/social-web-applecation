@@ -1,6 +1,5 @@
-// src/components/pages/Profile/UserProfile.tsx
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom'; // Импортируйте useNavigate
+import { useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../../axiosConfig';
 import { User } from '../../../types/types';
 import { FaUserCircle } from 'react-icons/fa';
@@ -9,15 +8,14 @@ import { useAuth } from '../../../contexts/AuthContext';
 
 const UserProfile: React.FC = () => {
     const { id } = useParams<{ id: string }>();
-    const navigate = useNavigate(); // Инициализация хука навигации
-    const { user: currentUser } = useAuth(); // Получаем текущего пользователя
+    const navigate = useNavigate();
+    const { user: currentUser } = useAuth();
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchUser = async () => {
-            // Если id не указан, показываем профиль текущего пользователя
             if (!id) {
                 if (currentUser) {
                     setUser(currentUser);
@@ -34,7 +32,7 @@ const UserProfile: React.FC = () => {
                 setLoading(true);
                 setError(null);
                 const response = await axiosInstance.get(`/api/users/${id}`);
-                console.log("Fetched user profile:", response.data); // Для отладки
+                console.log("Fetched user profile:", response.data);
                 if (response.data) {
                     setUser(response.data);
                 } else {
@@ -56,13 +54,12 @@ const UserProfile: React.FC = () => {
     if (error) return <div className="text-center mt-10 text-red-500">{error}</div>;
     if (!user) return null;
 
-    // Функция для отправки сообщения
     const handleSendMessage = () => {
-        navigate(`/message/${user._id}`); // Переход к диалогу с пользователем
+        navigate(`/message/${user._id}`);
     };
 
     const handleEditProfile = () => {
-        navigate(`/edit-profile`); // Переход к редактирования профиля
+        navigate(`/edit-profile`);
     };
 
     return (
@@ -101,17 +98,14 @@ const UserProfile: React.FC = () => {
                     </div>
                 </div>
             </div>
-            {/* Кнопки взаимодействия */}
             <div className="flex gap-4 mt-6">
-                {/* Кнопка редактирования профиля */}
                 <button
-                    onClick={handleEditProfile} // Обработчик для перехода к редактированию профиля
+                    onClick={handleEditProfile}
                     className="px-4 py-2 bg-rose-500 dark:bg-slate-950 dark:border-rose-500 text-white rounded transition">
                     Редактировать профиль
                 </button>
-                {/* Измените кнопку для отправки сообщения */}
                 <button 
-                    onClick={handleSendMessage} // Обработчик для перехода к сообщениям
+                    onClick={handleSendMessage}
                     className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
                 >
                     Отправить сообщение

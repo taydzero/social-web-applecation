@@ -3,7 +3,7 @@ import React from "react";
 const Groups = () => {
    return(
        <div className="">
-            Groups
+            В разработке
        </div>
    )
 }

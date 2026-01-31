@@ -1,4 +1,3 @@
-// src/config/db.ts
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 
@@ -10,7 +9,7 @@ const connectDB = async () => {
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
     console.error(`Error: ${(error as Error).message}`);
-    process.exit(1); // Остановить приложение при ошибке подключения
+    process.exit(1);
   }
 };
 

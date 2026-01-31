@@ -1,10 +1,9 @@
-// src/models/Message.ts
 import mongoose, { Schema, Document, Types } from 'mongoose';
 
 export interface IMessage extends Document {
     content: string;
-    from: Types.ObjectId; // Изменено с string на ObjectId
-    to: Types.ObjectId;   // Изменено с string на ObjectId
+    from: Types.ObjectId;
+    to: Types.ObjectId;
     timestamp?: Date;
 }
 

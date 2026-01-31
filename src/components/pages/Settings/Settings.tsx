@@ -1,14 +1,13 @@
 import React from "react";
 import { useTheme } from '../../../ThemeContext';
 
-// Импортируем фоны
 import lightBg1 from '../../../assets/lightBg1.gif';
 import lightBg2 from '../../../assets/lightBg2.gif';
 import darkBg1 from '../../../assets/darkBg1.gif';
 import darkBg2 from '../../../assets/darkBg2.gif';
 import lightBg3 from '../../../assets/lightBg3.gif';
 import darkBg3 from '../../../assets/darkBg3.gif';
-import neutralBg1 from '../../../assets/neutralBg1.gif'; // Фоны для нейтральной темы
+import neutralBg1 from '../../../assets/neutralBg1.gif';
 import neutralBg2 from '../../../assets/neutralBg2.gif';
 import neutralBg3 from '../../../assets/neutralBg3.gif';
 

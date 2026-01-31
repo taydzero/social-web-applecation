@@ -1,4 +1,3 @@
-// src/components/pages/message/MessageContext.tsx
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import axiosInstance from '../../../axiosConfig';
 import { Message } from '../../../types/types';

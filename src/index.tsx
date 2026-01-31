@@ -1,4 +1,3 @@
-// src/index.tsx
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './styles/styles.css';
@@ -16,15 +15,15 @@ import { PlayerProvider } from './components/pages/Player/PlayerContext';
 import { MessageProvider } from './components/pages/message/MessageContext';
 import UserProfile from './components/pages/Profile/UserProfile';
 import { UserProvider } from './components/pages/Profile/UserContext';
-import { AuthProvider } from './contexts/AuthContext'; // Убедитесь, что путь правильный
-import Register from './Register'; // Путь к вашему Register компоненту
-import Login from './Login'; // Путь к вашему Login компоненту
-import PrivateRoute from './Private/PrivateRoute'; // Путь к вашему PrivateRoute компоненту
+import { AuthProvider } from './contexts/AuthContext';
+import Register from './Register';
+import Login from './Login';
+import PrivateRoute from './Private/PrivateRoute';
 import Groups from './components/pages/Groups/Groups';
 import ProtectedComponent from './components/ProtectedComponent';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import axiosInstance from './axiosConfig'; // Используем настроенный экземпляр Axios
+import axiosInstance from './axiosConfig';
 import EditProfile from './components/pages/Profile/EditProfile';
 
 const root = ReactDOM.createRoot(

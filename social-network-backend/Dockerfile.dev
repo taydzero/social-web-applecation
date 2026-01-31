@@ -1,20 +1,14 @@
-# Dockerfile для бэкенда (режим разработки)
 FROM node:18-alpine
 
 WORKDIR /app
 
-# Копируем package.json и package-lock.json
 COPY package*.json ./
 
-# Устанавливаем зависимости
 RUN npm ci
 
-# Создаем папку для загрузок
 RUN mkdir -p uploads/avatars
 
-# Открываем порт
 EXPOSE 5000
 
-# Запускаем в режиме разработки
 CMD ["npm", "run", "dev"]
 

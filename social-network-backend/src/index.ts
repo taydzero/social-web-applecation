@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { DataSource } from "typeorm"; // Импортируем DataSource
+import { DataSource } from "typeorm";
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -9,7 +9,7 @@ import http from 'http';
 import { Server } from 'socket.io';
 import jwt from 'jsonwebtoken';
 import path from 'path';
-import { Message } from './entities/Message'; // Импортируйте свою модель сообщения из правильного места
+import { Message } from './entities/Message';
 import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
 import messageRoutes from './routes/messageRoutes';
@@ -18,13 +18,11 @@ import { authenticateToken } from './middlewares/authMiddleware';
 import { Request, Response } from 'express';
 import { User } from './entities/User';
 
-// Настройка переменных окружения
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000; // Убедитесь, что PORT определен
+const PORT = process.env.PORT || 5000;
 
-// Middleware
 app.use(helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
     crossOriginEmbedderPolicy: false
@@ -36,15 +34,14 @@ app.use(cors({
 app.use(express.json());
 app.use(morgan('dev'));
 
-// Создайте экземпляр DataSource
 export const AppDataSource = new DataSource({
     type: "postgres",
     host: process.env.DB_HOST,
-    port: parseInt(process.env.DB_PORT || "5432"), // Приводим значение порта к числу
+    port: parseInt(process.env.DB_PORT || "5432"),
     username: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    entities: [User, Message], // Укажите свои сущности здесь
+    entities: [User, Message],
     synchronize: true,
     logging: true,
 });
@@ -53,7 +50,6 @@ AppDataSource.initialize()
     .then(() => {
         console.log('PostgreSQL подключен');
 
-        // Обслуживание статических файлов с CORS заголовками
         app.use('/uploads/avatars', (req, res, next) => {
             res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
             res.header('Access-Control-Allow-Methods', 'GET');
@@ -61,22 +57,19 @@ AppDataSource.initialize()
             next();
         }, express.static(path.join(__dirname, '../uploads/avatars')));
 
-        // Подключение маршрутов
         app.use('/api/auth', authRoutes);
         app.use('/api/users', authenticateToken, userRoutes);
         app.use('/api/messages', authenticateToken, messageRoutes);
 
 
-        // Создание HTTP сервера и Socket.io сервера
         const server = http.createServer(app);
         const io = new Server(server, {
             cors: {
-                origin: 'http://localhost:3000', // URL вашего фронтенда
+                origin: 'http://localhost:3000',
                 methods: ['GET', 'POST'],
             },
         });
 
-        // Middleware для аутентификации Socket.io соединений
         io.use((socket, next) => {
             const token = socket.handshake.auth.token;
             if (!token) {
@@ -85,31 +78,27 @@ AppDataSource.initialize()
             try {
                 const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret_key') as { userId: number | string };
                 const userId = typeof decoded.userId === 'number' ? decoded.userId : Number(decoded.userId);
-                (socket as any).userId = userId.toString(); // Socket.io использует строки для комнат
+                (socket as any).userId = userId.toString();
                 next();
             } catch (err) {
                 next(new Error('Токен недействителен'));
             }
         });
 
-        // Обработка Socket.io соединений
         io.on('connection', (socket) => {
             const userId = (socket as any).userId;
             console.log(`Пользователь ${userId} подключился`);
 
-            // Присоединение пользователя к своей комнате
             socket.join(userId);
 
-            // Обработка отправки сообщений
             socket.on('sendMessage', async (data: { to: string; content: string }) => {
                 const { to, content } = data;
                 try {
-                    const messageRepository = AppDataSource.getRepository(Message); // Используем AppDataSource
-                    const userRepository = AppDataSource.getRepository(User); // Используем AppDataSource
+                    const messageRepository = AppDataSource.getRepository(Message);
+                    const userRepository = AppDataSource.getRepository(User);
 
-                    // Приведение id к числу
                     const recipientId = parseInt(to, 10);
-                    const senderId = parseInt(userId, 10); // userId должен быть строкой
+                    const senderId = parseInt(userId, 10);
 
                     // Находим отправителя и получателя
                     const fromUser = await userRepository.findOne({ where: { id: senderId } });
@@ -123,8 +112,8 @@ AppDataSource.initialize()
                     // Создаем и сохраняем сообщение
                     const message = messageRepository.create({
                         content,
-                        fromUser,  // Используем полный объект User
-                        toUser,    // Используем найденного получателя
+                        fromUser,
+                        toUser,
                     });
 
                     await messageRepository.save(message);
@@ -160,10 +149,8 @@ AppDataSource.initialize()
                         timestamp: populatedMessage?.timestamp,
                     };
 
-                    // Отправка сообщения получателю в реальном времени
                     io.to(to).emit('receiveMessage', formattedMessage);
 
-                    // Также можно отправить сообщение отправителю
                     socket.emit('messageSent', formattedMessage);
                 } catch (error) {
                     console.error('Ошибка при отправке сообщения:', error);
@@ -177,7 +164,6 @@ AppDataSource.initialize()
             });
         });
 
-        // Запуск сервера
         server.listen(PORT, () => {
             console.log(`Сервер запущен на порту ${PORT}`);
         });

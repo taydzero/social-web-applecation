@@ -16,23 +16,6 @@ npm install
 ```
 
 2. Создайте файл `.env` в корне проекта на основе `.env.example`:
-```bash
-# Database Configuration
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=admin
-DB_PASSWORD=admin
-DB_NAME=web_social_db
-
-# JWT Secret Key (измените на случайную строку в продакшене)
-JWT_SECRET=your_jwt_secret_key_change_this_in_production
-
-# Server Port
-PORT=5000
-
-# Prisma Database URL (если используете Prisma)
-DATABASE_URL=postgresql://admin:admin@localhost:5432/web_social_db
-```
 
 3. Убедитесь, что PostgreSQL запущен и создана база данных `web_social_db`:
 ```sql
@@ -114,6 +97,5 @@ src/
 ## Примечания
 
 - В режиме разработки `synchronize: true` автоматически синхронизирует схему базы данных. В продакшене используйте миграции.
-- Убедитесь, что JWT_SECRET изменен на безопасное значение в продакшене.
 - CORS настроен для работы с фронтендом на `http://localhost:3000`. Измените настройки при необходимости.
 

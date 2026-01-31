@@ -1,4 +1,3 @@
-// src/components/pages/message/Message.tsx
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useMessages } from './MessageContext';
@@ -13,15 +12,15 @@ const Message: React.FC = () => {
     const [userMessages, setUserMessages] = useState<MessageType[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const [recipientName, setRecipientName] = useState<string>(''); // Хранение имени получателя
-    const { user } = useAuth(); // Получение текущего пользователя
+    const [recipientName, setRecipientName] = useState<string>('');
+    const { user } = useAuth();
 
     const fetchUserMessages = async () => {
         if (id) {
             try {
                 setLoading(true);
                 const response = await axiosInstance.get(`/api/messages/${id}`);
-                console.log("Fetched messages:", response.data); // Добавлено для отладки
+                console.log("Fetched messages:", response.data);
                 setUserMessages(Array.isArray(response.data) ? response.data : []);
                 setError(null);
             } catch (error) {
@@ -36,9 +35,9 @@ const Message: React.FC = () => {
     const fetchRecipientInfo = async () => {
         if (id) {
             try {
-                const response = await axiosInstance.get(`/api/users/${id}`); // Получение информации о пользователе
-                console.log("Fetched recipient info:", response.data); // Добавлено для отладки
-                setRecipientName(response.data.name); // Предполагаем, что ответ содержит поле name
+                const response = await axiosInstance.get(`/api/users/${id}`);
+                console.log("Fetched recipient info:", response.data);
+                setRecipientName(response.data.name);
             } catch (error) {
                 console.error('Ошибка при загрузке информации о пользователе:', error);
             }
@@ -47,15 +46,14 @@ const Message: React.FC = () => {
 
     useEffect(() => {
         fetchUserMessages();
-        fetchRecipientInfo(); // Вызов функции для получения информации о получателе
-    }, [id]); // Обновлять только при изменении id
+        fetchRecipientInfo();
+    }, [id]);
 
     const handleSendMessage = async () => {
         if (newMessage.trim() && id) {
             try {
                 await sendMessage(id, newMessage.trim());
                 setNewMessage('');
-                // Перезагружаем сообщения после отправки
                 await fetchUserMessages();
             } catch (error) {
                 console.error('Ошибка при отправке сообщения:', error);
@@ -67,14 +65,13 @@ const Message: React.FC = () => {
     if (error) return <div className="text-center mt-10 text-red-500">{error}</div>;
 
     return (
-            <div className="flex flex-col h-screen p-4"> {/* Используем flex для вертикального размещения */}
-                <h2 className="text-xl mb-4">Переписка с пользователем {recipientName || id}</h2> {/* Используем имя получателя */}
+            <div className="flex flex-col h-screen p-4">
+                <h2 className="text-xl mb-4">Переписка с пользователем {recipientName || id}</h2>
                 
-                {/* Блок с сообщениями, который будет занимать все оставшееся место */}
                 <div className="flex-1 overflow-y-auto mb-4"> 
                     {userMessages.length > 0 ? (
                         userMessages.map((msg: MessageType) => {
-                            console.log('Processing message:', msg); // Добавлено для отладки
+                            console.log('Processing message:', msg);
                             const isSentByCurrentUser = msg.from._id === user?._id;
                             return (
                                 <div 
@@ -97,7 +94,6 @@ const Message: React.FC = () => {
                     )}
                 </div>
         
-                {/* Форма для отправки нового сообщения, прикреплена к низу */}
                 <div className="flex flex-col">
                 <textarea
                         value={newMessage}

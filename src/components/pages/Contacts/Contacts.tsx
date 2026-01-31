@@ -1,4 +1,3 @@
-// src/components/pages/Contacts/Contacts.tsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../../axiosConfig';
@@ -51,7 +50,7 @@ const Contacts: React.FC = () => {
                             className=""
                             //p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow dark:bg-slate-800
                         >
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-4 mb-4">
                                 
                                 <div className="">
                                 <Avatar
@@ -80,7 +79,8 @@ const Contacts: React.FC = () => {
                                     </div>
                                 </div>
                                 {/* <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p> */}
-                            </div>   
+                            </div> 
+                            <hr className='mb-4'></hr>  
                         </div>
                     ))}
                 </div>
