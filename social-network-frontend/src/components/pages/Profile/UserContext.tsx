@@ -17,8 +17,11 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         try {
             const response = await axiosInstance.get('/api/users');
             setUsers(response.data);
-        } catch (error) {
-            console.error('Ошибка загрузки пользователей', error);
+        } catch (error: any) {
+            console.error('Ошибка загрузки пользователей', error.response?.status || error.message);
+            if (error.response?.status === 401 || error.response?.status === 403) {
+                console.error('Неавторизованный доступ, токен невалиден или истёк');
+            }
         }
     };
 
@@ -26,9 +29,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         fetchUsers();
     }, []);
 
-    const addUser = (user: User) => {
-        setUsers((prev) => [...prev, user]);
-    };
+    const addUser = (user: User) => setUsers(prev => [...prev, user]);
 
     return (
         <UserContext.Provider value={{ users, addUser, fetchUsers }}>
@@ -39,8 +40,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
 export const useUserContext = () => {
     const context = useContext(UserContext);
-    if (!context) {
-        throw new Error('useUserContext must be used within a UserProvider');
-    }
+    if (!context) throw new Error('useUserContext must be used within a UserProvider');
     return context;
 };

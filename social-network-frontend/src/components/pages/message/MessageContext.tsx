@@ -6,27 +6,34 @@ import { useAuth } from '../../../contexts/AuthContext';
 interface MessageContextType {
     messages: Message[];
     sendMessage: (to: string, msg: string) => Promise<void>;
+    fetchMessages: () => void;
 }
 
 const MessageContext = createContext<MessageContextType | undefined>(undefined);
 
 export const MessageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [messages, setMessages] = useState<Message[]>([]);
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
+
+    const fetchMessages = async () => {
+        if (!user) return;
+
+        try {
+            const response = await axiosInstance.get('/api/messages');
+            console.log('Полученные сообщения:', response.data);
+            setMessages(Array.isArray(response.data) ? response.data : []);
+        } catch (error: any) {
+            console.error('Ошибка при получении сообщений:', error.response?.status || error.message);
+            if (error.response?.status === 401 || error.response?.status === 403) {
+                console.warn('Токен недействителен, выходим...');
+                logout();
+            }
+        }
+    };
 
     useEffect(() => {
-        const fetchMessages = async () => {
-            if (user) {
-                try {
-                    const response = await axiosInstance.get('/api/messages');
-                    console.log('Полученные сообщения:', response.data); // Логирование
-                    setMessages(Array.isArray(response.data) ? response.data : []);
-                } catch (error) {
-                    console.error('Ошибка при получении сообщений:', error);
-                }
-            }
-        };
         fetchMessages();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user]);
 
     const sendMessage = async (to: string, msg: string) => {
@@ -35,13 +42,17 @@ export const MessageProvider: React.FC<{ children: ReactNode }> = ({ children })
         try {
             const response = await axiosInstance.post('/api/messages', { to, content: msg });
             setMessages(prev => [...prev, response.data]);
-        } catch (error) {
-            console.error('Ошибка при отправке сообщения:', error);
+        } catch (error: any) {
+            console.error('Ошибка при отправке сообщения:', error.response?.status || error.message);
+            if (error.response?.status === 401 || error.response?.status === 403) {
+                console.warn('Токен недействителен, выходим...');
+                logout();
+            }
         }
     };
 
     return (
-        <MessageContext.Provider value={{ messages, sendMessage }}>
+        <MessageContext.Provider value={{ messages, sendMessage, fetchMessages }}>
             {children}
         </MessageContext.Provider>
     );

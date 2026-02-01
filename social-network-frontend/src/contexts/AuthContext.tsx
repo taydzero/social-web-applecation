@@ -5,7 +5,6 @@ import { toast } from 'react-toastify';
 
 class AuthError extends Error {
     errors?: Array<{ msg: string }>;
-
     constructor(message: string, errors?: Array<{ msg: string }>) {
         super(message);
         this.name = 'AuthError';
@@ -47,15 +46,29 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }, [navigate]);
 
     useEffect(() => {
+        axiosInstance.interceptors.request.use(
+            (config) => {
+                const t = localStorage.getItem('token');
+                if (t) {
+                    config.headers['Authorization'] = `Bearer ${t}`;
+                }
+                return config;
+            },
+            (error) => Promise.reject(error)
+        );
+    }, []);
+
+    useEffect(() => {
         if (token) {
-            // Получение профиля пользователя при наличии токена
             axiosInstance.get('/api/users/profile')
                 .then(response => {
                     setUser(response.data);
                 })
                 .catch(error => {
-                    console.error('Ошибка при получении профиля:', error);
-                    logout();
+                    console.error('Ошибка при получении профиля:', error.response?.status);
+                    if (error.response?.status === 401 || error.response?.status === 403) {
+                        logout();
+                    }
                 });
         }
     }, [token, logout]);
@@ -67,7 +80,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             localStorage.setItem('token', receivedToken);
             setToken(receivedToken);
 
-            // Получение профиля после регистрации
             const profileResponse = await axiosInstance.get('/api/users/profile');
             setUser(profileResponse.data);
 
@@ -75,19 +87,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             navigate('/');
         } catch (error: any) {
             console.error('Ошибка при регистрации:', error.response?.data || error.message);
-            if (error.response?.data?.errors) {
-                error.response.data.errors.forEach((err: any) => toast.error(err.msg));
-                throw new AuthError('Ошибка регистрации', error.response.data.errors);
-            } else if (error.response?.data?.message) {
-                toast.error(error.response.data.message);
-                throw new AuthError(error.response.data.message);
-            } else {
-                const message = error.message === 'Network Error' 
-                    ? 'Сервер недоступен. Проверьте соединение.' 
-                    : 'Не удалось выполнить регистрацию. Попробуйте позже.';
-                toast.error(message);
-                throw new AuthError(message);
-            }
+            const message = error.response?.data?.message || 'Не удалось зарегистрироваться';
+            toast.error(message);
+            throw new AuthError(message);
         }
     };
 
@@ -98,7 +100,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             localStorage.setItem('token', receivedToken);
             setToken(receivedToken);
 
-            // Получение профиля после логина
             const profileResponse = await axiosInstance.get('/api/users/profile');
             setUser(profileResponse.data);
 
@@ -106,19 +107,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             navigate('/');
         } catch (error: any) {
             console.error('Ошибка при логине:', error.response?.data || error.message);
-            if (error.response?.data?.errors) {
-                error.response.data.errors.forEach((err: any) => toast.error(err.msg));
-                throw new AuthError('Ошибка входа', error.response.data.errors);
-            } else if (error.response?.data?.message) {
-                toast.error(error.response.data.message);
-                throw new AuthError(error.response.data.message);
-            } else {
-                const message = error.message === 'Network Error' 
-                    ? 'Сервер недоступен. Проверьте соединение.' 
-                    : 'Не удалось выполнить вход. Попробуйте позже.';
-                toast.error(message);
-                throw new AuthError(message);
-            }
+            const message = error.response?.data?.message || 'Не удалось войти';
+            toast.error(message);
+            throw new AuthError(message);
         }
     };
 
@@ -131,8 +122,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
 export const useAuth = (): AuthContextType => {
     const context = useContext(AuthContext);
-    if (!context) {
-        throw new Error('useAuth must be used within an AuthProvider');
-    }
+    if (!context) throw new Error('useAuth must be used within an AuthProvider');
     return context;
 };
