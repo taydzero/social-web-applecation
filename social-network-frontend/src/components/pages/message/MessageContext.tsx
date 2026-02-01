@@ -1,67 +1,52 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import axiosInstance from '../../../axiosConfig';
+import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
 import { Message } from '../../../types/types';
-import { useAuth } from '../../../contexts/AuthContext';
+import axiosInstance from '../../../axiosConfig';
 
 interface MessageContextType {
-    messages: Message[];
-    sendMessage: (to: string, msg: string) => Promise<void>;
-    fetchMessages: () => void;
+  messages: Message[];
+  sendMessage: (to: string, content: string) => Promise<void>;
+  fetchMessagesWithUser: (id: string) => Promise<void>;
 }
 
 const MessageContext = createContext<MessageContextType | undefined>(undefined);
 
 export const MessageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [messages, setMessages] = useState<Message[]>([]);
-    const { user, logout } = useAuth();
+  const [messages, setMessages] = useState<Message[]>([]);
 
-    const fetchMessages = async () => {
-        if (!user) return;
+  // Загрузка сообщений с конкретным пользователем
+  const fetchMessagesWithUser = useCallback(async (id: string) => {
+    try {
+      const response = await axiosInstance.get(`/api/messages/${id}`);
+      setMessages(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      console.error('Ошибка при загрузке сообщений с пользователем:', error);
+    }
+  }, []);
 
-        try {
-            const response = await axiosInstance.get('/api/messages');
-            console.log('Полученные сообщения:', response.data);
-            setMessages(Array.isArray(response.data) ? response.data : []);
-        } catch (error: any) {
-            console.error('Ошибка при получении сообщений:', error.response?.status || error.message);
-            if (error.response?.status === 401 || error.response?.status === 403) {
-                console.warn('Токен недействителен, выходим...');
-                logout();
-            }
-        }
-    };
+  // Отправка нового сообщения
+  const sendMessage = useCallback(async (to: string, content: string) => {
+    if (!content.trim()) return;
 
-    useEffect(() => {
-        fetchMessages();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user]);
+    try {
+      // Отправка сообщения на бек с ID получателя в URL
+      await axiosInstance.post(`/api/messages/${to}`, { content });
+      // Обновляем список сообщений после отправки
+      await fetchMessagesWithUser(to);
+    } catch (error) {
+      console.error('Ошибка при отправке сообщения:', error);
+      throw error; // чтобы компонент мог поймать и показать ошибку
+    }
+  }, [fetchMessagesWithUser]);
 
-    const sendMessage = async (to: string, msg: string) => {
-        if (!user) return;
-
-        try {
-            const response = await axiosInstance.post('/api/messages', { to, content: msg });
-            setMessages(prev => [...prev, response.data]);
-        } catch (error: any) {
-            console.error('Ошибка при отправке сообщения:', error.response?.status || error.message);
-            if (error.response?.status === 401 || error.response?.status === 403) {
-                console.warn('Токен недействителен, выходим...');
-                logout();
-            }
-        }
-    };
-
-    return (
-        <MessageContext.Provider value={{ messages, sendMessage, fetchMessages }}>
-            {children}
-        </MessageContext.Provider>
-    );
+  return (
+    <MessageContext.Provider value={{ messages, sendMessage, fetchMessagesWithUser }}>
+      {children}
+    </MessageContext.Provider>
+  );
 };
 
 export const useMessages = (): MessageContextType => {
-    const context = useContext(MessageContext);
-    if (!context) {
-        throw new Error('useMessages must be used within a MessageProvider');
-    }
-    return context;
+  const context = useContext(MessageContext);
+  if (!context) throw new Error('useMessages must be used within a MessageProvider');
+  return context;
 };

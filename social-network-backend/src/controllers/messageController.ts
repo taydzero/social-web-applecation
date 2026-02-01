@@ -75,62 +75,46 @@ export const getMessagesWithUser = async (req: Request, res: Response): Promise<
 export const sendMessage = async (req: Request, res: Response): Promise<void> => {
     const messageRepository = AppDataSource.getRepository(Message);
     const userRepository = AppDataSource.getRepository(User);
-    const { to, content } = req.body;
 
-    if (!to || !content) {
-        res.status(400).json({ message: 'Необходимы поля "to" и "content"' });
+    const recipientId = Number(req.params.id); // берём из params
+    const senderId = Number(req.user?.userId);
+    const { content } = req.body;
+
+    if (!content || isNaN(recipientId) || isNaN(senderId)) {
+        res.status(400).json({ message: 'Неверные данные' });
         return;
     }
 
-    const recipientId = Number(to);
-    const senderId = Number(req.user?.userId);
-
-    if (isNaN(recipientId) || isNaN(senderId)) {
-        res.status(400).json({ message: 'Некорректные идентификаторы пользователя' });
+    if (senderId === recipientId) {
+        res.status(400).json({ message: 'Нельзя отправить сообщение самому себе' });
         return;
     }
 
     try {
-        if (senderId === recipientId) {
-            res.status(400).json({ message: 'Нельзя отправить сообщение самому себе' });
+        const recipient = await userRepository.findOneBy({ id: recipientId });
+        const sender = await userRepository.findOneBy({ id: senderId });
+
+        if (!recipient || !sender) {
+            res.status(404).json({ message: 'Пользователь не найден' });
             return;
         }
 
-        const recipient = await userRepository.findOne({
-            where: { id: recipientId },
-        });
-        if (!recipient) {
-            res.status(404).json({ message: 'Получатель не найден' });
-            return;
-        }
-        
-        const sender = await userRepository.findOne({
-            where: { id: senderId },
-        });
-        if (!sender) {
-            res.status(404).json({ message: 'Отправитель не найден' });
-            return;
-        }
-
-        const message = messageRepository.create({
-            content,
-            fromUser: sender,
-            toUser: recipient
-        });
-
+        const message = messageRepository.create({ content, fromUser: sender, toUser: recipient });
         await messageRepository.save(message);
 
         const populatedMessage = await messageRepository.findOne({
             where: { id: message.id },
             relations: ['fromUser', 'toUser'],
         });
+
         res.status(201).json(formatMessage(populatedMessage!));
-        
-    } catch (error) {
-        console.error('Ошибка при отправке сообщения', error);
+
+    } catch (err) {
+        console.error(err);
         res.status(500).json({ message: 'Серверная ошибка' });
     }
 };
+
 
 // Получение списка всех пользователей, с которыми была переписка
 export const getConversations = async (req: Request, res: Response): Promise<void> => {

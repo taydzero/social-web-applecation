@@ -12,14 +12,6 @@ class AuthError extends Error {
     }
 }
 
-interface AuthContextType {
-    user: User | null;
-    token: string | null;
-    register: (name: string, email: string, password: string) => Promise<void>;
-    login: (email: string, password: string) => Promise<void>;
-    logout: () => void;
-}
-
 interface User {
     _id: string;
     name: string;
@@ -30,21 +22,37 @@ interface User {
     updatedAt: string;
 }
 
+interface AuthContextType {
+    user: User | null;
+    token: string | null;
+    isChecking: boolean;
+    register: (name: string, email: string, password: string) => Promise<void>;
+    login: (email: string, password: string) => Promise<void>;
+    logout: () => void;
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+    const [isChecking, setIsChecking] = useState<boolean>(true);
     const navigate = useNavigate();
 
+    // ---------------------
+    // Тестовый режим
+    const TEST_MODE = true; // <- установи true для теста, false для боевой версии
+    // ---------------------
+
     const logout = useCallback(() => {
+        if (TEST_MODE) return; // отключаем очистку токена для теста
         localStorage.removeItem('token');
         setToken(null);
         setUser(null);
-        navigate('/login');
         toast.info('Вы вышли из системы.');
-    }, [navigate]);
+    }, []);
 
+    // Добавляем токен в axios
     useEffect(() => {
         axiosInstance.interceptors.request.use(
             (config) => {
@@ -58,20 +66,29 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         );
     }, []);
 
+    // Проверка токена и загрузка профиля
     useEffect(() => {
-        if (token) {
-            axiosInstance.get('/api/users/profile')
-                .then(response => {
-                    setUser(response.data);
-                })
-                .catch(error => {
-                    console.error('Ошибка при получении профиля:', error.response?.status);
-                    if (error.response?.status === 401 || error.response?.status === 403) {
-                        logout();
-                    }
-                });
-        }
-    }, [token, logout]);
+        const checkProfile = async () => {
+            if (!token) {
+                setIsChecking(false);
+                return;
+            }
+            try {
+                const response = await axiosInstance.get('/api/users/profile');
+                setUser(response.data);
+            } catch (error: any) {
+                console.error('Ошибка при получении профиля:', error);
+                if (!TEST_MODE) {
+                    localStorage.removeItem('token');
+                    setToken(null);
+                    setUser(null);
+                }
+            } finally {
+                setIsChecking(false);
+            }
+        };
+        checkProfile();
+    }, [token]);
 
     const register = async (name: string, email: string, password: string) => {
         try {
@@ -114,7 +131,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
 
     return (
-        <AuthContext.Provider value={{ user, token, register, login, logout }}>
+        <AuthContext.Provider value={{ user, token, isChecking, register, login, logout }}>
             {children}
         </AuthContext.Provider>
     );

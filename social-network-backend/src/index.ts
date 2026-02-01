@@ -30,7 +30,6 @@ app.use(helmet({
 }));
 app.use(cors({
   origin: (origin, callback) => {
-    // allow server-to-server & Postman
     if (!origin) return callback(null, true);
 
     const allowedOrigins = [
@@ -45,7 +44,10 @@ app.use(cors({
     }
   },
   credentials: true,
+  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization'],
 }));
+
 app.use(express.json());
 app.use(morgan('dev'));
 

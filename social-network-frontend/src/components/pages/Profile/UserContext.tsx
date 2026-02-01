@@ -12,6 +12,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [users, setUsers] = useState<User[]>([]);
+    const TEST_MODE = true; // <- тестовый режим
 
     const fetchUsers = async () => {
         try {
@@ -19,8 +20,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             setUsers(response.data);
         } catch (error: any) {
             console.error('Ошибка загрузки пользователей', error.response?.status || error.message);
-            if (error.response?.status === 401 || error.response?.status === 403) {
-                console.error('Неавторизованный доступ, токен невалиден или истёк');
+            if (!TEST_MODE && (error.response?.status === 401 || error.response?.status === 403)) {
+                console.error('Неавторизованный доступ');
             }
         }
     };

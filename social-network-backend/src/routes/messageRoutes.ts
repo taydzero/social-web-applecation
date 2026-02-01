@@ -5,17 +5,20 @@ import { check } from 'express-validator';
 
 const router = Router();
 
+// Получить список всех диалогов пользователя
 router.get('/conversations', authenticateToken, getConversations);
 
+// Получить все сообщения пользователя (не обязательно, может быть для админки)
 router.get('/', authenticateToken, getAllMessages);
 
+// Получить сообщения с конкретным пользователем
 router.get('/:id', authenticateToken, getMessagesWithUser);
 
+// Отправить сообщение конкретному пользователю
 router.post(
-    '/',
+    '/:id',
     authenticateToken,
     [
-        check('to', 'Получатель обязателен').not().isEmpty(),
         check('content', 'Сообщение не должно быть пустым').not().isEmpty(),
     ],
     sendMessage
