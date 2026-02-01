@@ -23,7 +23,7 @@ import Groups from './components/pages/Groups/Groups';
 import ProtectedComponent from './components/ProtectedComponent';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import axiosInstance from './axiosConfig';
+// import axiosInstance from './axiosConfig';
 import EditProfile from './components/pages/Profile/EditProfile';
 
 const root = ReactDOM.createRoot(

@@ -22,40 +22,50 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:3000';
 
 app.use(helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
     crossOriginEmbedderPolicy: false
 }));
 app.use(cors({
-    origin: 'http://localhost:3000',
-    credentials: true
+  origin: (origin, callback) => {
+    // allow server-to-server & Postman
+    if (!origin) return callback(null, true);
+
+    const allowedOrigins = [
+      'http://localhost:3000',
+      CLIENT_URL,
+    ];
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
 }));
 app.use(express.json());
 app.use(morgan('dev'));
 
 export const AppDataSource = new DataSource({
     type: "postgres",
-    host: process.env.DB_HOST,
-    port: parseInt(process.env.DB_PORT || "5432"),
-    username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
+    url: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false,
+    },
     entities: [User, Message],
     synchronize: true,
     logging: true,
 });
 
+
 AppDataSource.initialize()
     .then(() => {
         console.log('PostgreSQL подключен');
 
-        app.use('/uploads/avatars', (req, res, next) => {
-            res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
-            res.header('Access-Control-Allow-Methods', 'GET');
-            res.header('Access-Control-Allow-Headers', 'Content-Type');
-            next();
-        }, express.static(path.join(__dirname, '../uploads/avatars')));
+        app.use('/uploads/avatars', express.static(path.join(__dirname, '../uploads/avatars')));
 
         app.use('/api/auth', authRoutes);
         app.use('/api/users', authenticateToken, userRoutes);
@@ -65,7 +75,7 @@ AppDataSource.initialize()
         const server = http.createServer(app);
         const io = new Server(server, {
             cors: {
-                origin: 'http://localhost:3000',
+                origin: CLIENT_URL,
                 methods: ['GET', 'POST'],
             },
         });

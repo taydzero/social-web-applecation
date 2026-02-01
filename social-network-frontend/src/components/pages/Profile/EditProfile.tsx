@@ -5,7 +5,7 @@ import { User, EditProfileFormInputs } from '../../../types/types';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { toast } from 'react-toastify';
-import { FaUserCircle } from 'react-icons/fa';
+// import { FaUserCircle } from 'react-icons/fa';
 
 const schema = yup.object({
     name: yup.string().optional(),

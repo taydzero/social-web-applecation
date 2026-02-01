@@ -7,7 +7,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 
 const Message: React.FC = () => {
     const { id } = useParams<{ id: string }>();
-    const { messages, sendMessage } = useMessages();
+    const { sendMessage } = useMessages();
     const [newMessage, setNewMessage] = useState<string>('');
     const [userMessages, setUserMessages] = useState<MessageType[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
@@ -45,9 +45,10 @@ const Message: React.FC = () => {
     };
 
     useEffect(() => {
-        fetchUserMessages();
-        fetchRecipientInfo();
-    }, [id]);
+    fetchUserMessages();
+    fetchRecipientInfo();
+}, [id, fetchUserMessages, fetchRecipientInfo]);
+
 
     const handleSendMessage = async () => {
         if (newMessage.trim() && id) {
