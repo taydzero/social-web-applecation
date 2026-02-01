@@ -13,6 +13,16 @@ exports.User = void 0;
 const typeorm_1 = require("typeorm");
 const Message_1 = require("./Message");
 let User = class User {
+    id;
+    name;
+    email;
+    password;
+    bio;
+    avatar;
+    createdAt;
+    updatedAt;
+    messagesSent;
+    messagesReceived;
 };
 exports.User = User;
 __decorate([

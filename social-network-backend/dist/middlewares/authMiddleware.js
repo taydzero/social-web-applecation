@@ -12,15 +12,18 @@ const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
     if (!token) {
-        res.sendStatus(401); // Unauthorized
+        res.sendStatus(401);
         return;
     }
     jsonwebtoken_1.default.verify(token, JWT_SECRET, (err, decoded) => {
         if (err) {
-            res.sendStatus(403); // Forbidden
+            res.sendStatus(403);
             return;
         }
-        req.user = { userId: decoded.userId };
+        const userId = typeof decoded.userId === 'number'
+            ? decoded.userId
+            : Number(decoded.userId);
+        req.user = { userId };
         next();
     });
 };
