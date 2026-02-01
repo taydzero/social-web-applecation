@@ -50,7 +50,7 @@ services:
 
   frontend:
     build:
-      context: .
+      context: ./social-network-frontend
       dockerfile: Dockerfile.dev
     container_name: social-network-frontend-dev
     volumes:

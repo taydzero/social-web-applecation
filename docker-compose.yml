@@ -50,7 +50,7 @@ services:
   #Frontend
   frontend:
     build:
-      context: .
+      context: ./social-network-frontend
       dockerfile: Dockerfile
       args:
         REACT_APP_API_URL: http://localhost:5000
