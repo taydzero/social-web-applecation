@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 import axiosInstance from '../axiosConfig';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { socket } from '../socket';
 
 class AuthError extends Error {
     errors?: Array<{ msg: string }>;
@@ -44,6 +45,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         localStorage.removeItem('token');
         setToken(null);
         setUser(null);
+        socket.disconnect();
         toast.info('Вы вышли из системы.');
         navigate('/login');
     }, [navigate]);
@@ -83,6 +85,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         };
         checkProfile();
     }, [token]);
+
+    useEffect(() => {
+        if (user && token) {
+            socket.auth = { token };
+            socket.connect();
+
+            socket.on("connect", () => {
+            console.log("Socket подключен", socket.id);
+            });
+
+            socket.on("disconnect", () => {
+            console.log("Socket отключен");
+            });
+
+            return () => {
+            socket.disconnect();
+            };
+        }
+        }, [user, token]);
 
     const register = async (name: string, email: string, password: string) => {
         try {

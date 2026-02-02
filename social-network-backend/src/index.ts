@@ -79,7 +79,9 @@ AppDataSource.initialize()
             cors: {
                 origin: CLIENT_URL,
                 methods: ['GET', 'POST'],
+                credentials: true,
             },
+            transports: ['websocket'],
         });
 
         io.use((socket, next) => {
@@ -170,7 +172,6 @@ AppDataSource.initialize()
                 }
             });
 
-            // Обработка отключения
             socket.on('disconnect', () => {
                 console.log(`Пользователь ${userId} отключился`);
             });

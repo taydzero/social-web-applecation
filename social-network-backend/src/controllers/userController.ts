@@ -111,8 +111,10 @@ export const updateUserProfile = async (req: Request, res: Response): Promise<vo
             user.password = await bcrypt.hash(password, salt);
         }
         if (req.file) {
-            user.avatar = `/uploads/avatars/${req.file.filename}`;
+            const serverUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+            user.avatar = `${serverUrl}/uploads/avatars/${req.file.filename}`;
         }
+
 
         await userRepository.save(user);
         
