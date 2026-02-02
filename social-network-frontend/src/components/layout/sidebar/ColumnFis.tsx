@@ -10,8 +10,8 @@ import InsertRowRightOutlined from '@ant-design/icons/InsertRowRightOutlined';
 const ColumnFis= () => {
    return(
     // opacity-25 hover:opacity-100
-    <div className="flex w-48 h-72">
-    <div className="w-48 h-72 p-4 bg-white rounded-xl shadow-xl shadow-rose-500 transition-all duration-500 dark:bg-slate-950 dark:text-blue-500 dark:shadow-blue-500">
+    <div className="flex w-48 h-48">
+    <div className="w-48 h-48 p-4 bg-white rounded-xl shadow-xl shadow-rose-500 transition-all duration-500 dark:bg-slate-950 dark:text-blue-500 dark:shadow-blue-500">
        <nav>
          <ul className="text-sm">
            <li className="p-2 pb-2 dark:hover:text-white hover:text-rose-500 transition-all duration-200 ease-in-out transform hover:scale-105">
@@ -21,10 +21,10 @@ const ColumnFis= () => {
            </Link>
            </li>
            <li className="p-2 pb-2 dark:hover:text-white hover:text-rose-500 transition-all duration-200 ease-in-out transform hover:scale-105"><Link to="/News"><InsertRowRightOutlined /><span className="pl-2">Новости</span></Link></li>
-           <li className="p-2 pb-2 dark:hover:text-white hover:text-rose-500 transition-all duration-200 ease-in-out transform hover:scale-105"><Link to="/"><HomeOutlined /><span className="pl-2">Главная</span></Link></li>
+           {/* <li className="p-2 pb-2 dark:hover:text-white hover:text-rose-500 transition-all duration-200 ease-in-out transform hover:scale-105"><Link to="/"><HomeOutlined /><span className="pl-2">Главная</span></Link></li> */}
            <li className="p-2 pb-2 dark:hover:text-white hover:text-rose-500 transition-all duration-200 ease-in-out transform hover:scale-105"><Link to="/message"><MessageOutlined /><span className="pl-2">Мессенджер</span></Link></li>
            <li className="p-2 pb-2 dark:hover:text-white hover:text-rose-500 transition-all duration-200 ease-in-out transform hover:scale-105"><Link to="/contacts"><TeamOutlined /><span className="pl-2">Контакты</span></Link></li>
-           <li className="p-2 pb-2 dark:hover:text-white hover:text-rose-500 transition-all duration-200 ease-in-out transform hover:scale-105"><Link to="/groups"><GroupOutlined /><span className="pl-2">Группы</span></Link></li>
+           {/* <li className="p-2 pb-2 dark:hover:text-white hover:text-rose-500 transition-all duration-200 ease-in-out transform hover:scale-105"><Link to="/groups"><GroupOutlined /><span className="pl-2">Группы</span></Link></li> */}
            <li className="p-2 pb-2 dark:hover:text-white hover:text-rose-500 transition-all duration-200 ease-in-out transform hover:scale-105"><Link to="/settings"><SettingOutlined /><span className="pl-2">Настройки</span></Link></li>
          </ul>
        </nav>

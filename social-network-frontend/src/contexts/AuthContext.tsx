@@ -26,6 +26,7 @@ interface AuthContextType {
     user: User | null;
     token: string | null;
     isChecking: boolean;
+    isAuth: boolean;
     register: (name: string, email: string, password: string) => Promise<void>;
     login: (email: string, password: string) => Promise<void>;
     logout: () => void;
@@ -39,18 +40,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [isChecking, setIsChecking] = useState<boolean>(true);
     const navigate = useNavigate();
 
-    // ---------------------
-    // Тестовый режим
-    const TEST_MODE = true; // <- установи true для теста, false для боевой версии
-    // ---------------------
-
     const logout = useCallback(() => {
-        if (TEST_MODE) return; // отключаем очистку токена для теста
         localStorage.removeItem('token');
         setToken(null);
         setUser(null);
         toast.info('Вы вышли из системы.');
-    }, []);
+        navigate('/login');
+    }, [navigate]);
 
     // Добавляем токен в axios
     useEffect(() => {
@@ -78,11 +74,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 setUser(response.data);
             } catch (error: any) {
                 console.error('Ошибка при получении профиля:', error);
-                if (!TEST_MODE) {
                     localStorage.removeItem('token');
                     setToken(null);
                     setUser(null);
-                }
             } finally {
                 setIsChecking(false);
             }
@@ -131,7 +125,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
 
     return (
-        <AuthContext.Provider value={{ user, token, isChecking, register, login, logout }}>
+        <AuthContext.Provider 
+        value={{
+            user,
+            token,
+            isChecking,
+            isAuth: !!user,
+            register,
+            login,
+            logout
+        }}>
             {children}
         </AuthContext.Provider>
     );
