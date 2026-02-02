@@ -67,7 +67,7 @@ const MessageList: React.FC = () => {
                         </h3>
 
                         {user.lastMessage && (
-                        <span className="text-xs text-slate-400 ml-2 shrink-0">
+                        <span className="text-xs text-slate-400 pl-2 shrink-0">
                             {new Date(user.lastMessage.timestamp).toLocaleDateString(
                             'ru-RU',
                             {
