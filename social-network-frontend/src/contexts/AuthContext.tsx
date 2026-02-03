@@ -50,20 +50,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         navigate('/login');
     }, [navigate]);
 
-    // Добавляем токен в axios
-    useEffect(() => {
-        axiosInstance.interceptors.request.use(
-            (config) => {
-                const t = localStorage.getItem('token');
-                if (t) {
-                    config.headers['Authorization'] = `Bearer ${t}`;
-                }
-                return config;
-            },
-            (error) => Promise.reject(error)
-        );
-    }, []);
-
     // Проверка токена и загрузка профиля
     useEffect(() => {
         const checkProfile = async () => {
